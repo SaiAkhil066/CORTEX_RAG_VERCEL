@@ -308,6 +308,46 @@
     /* ── DIVIDER ── */
     .div { border: none; border-top: 1px solid var(--bd); margin: 0 60px; }
 
+    /* ── TECH COMPARISON ── */
+    .tcmp {
+      display: grid; grid-template-columns: 1fr 1px 1fr;
+      gap: 0; margin-bottom: 56px; max-width: 720px;
+    }
+    .tcmp-div { background: var(--bd); }
+    .tcmp-col { padding: 28px 36px; }
+    .tcmp-them { background: var(--s1); border: 1px solid var(--bd); border-right: none; }
+    .tcmp-us { background: var(--s2); border: 1px solid var(--bdh); border-left: none; }
+    .tcmp-head {
+      font-family: var(--fm); font-size: 10px; letter-spacing: .2em;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 18px;
+    }
+    .tcmp-row {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 13px; color: var(--muted); padding: 6px 0;
+      border-bottom: 1px solid var(--bd);
+    }
+    .tcmp-row:last-child { border-bottom: none; }
+    .tcmp-x { color: #e84343; font-size: 11px; flex-shrink: 0; }
+    .tcmp-ok { color: var(--lime); font-size: 11px; flex-shrink: 0; }
+    .tcmp-us .tcmp-row { color: var(--text); }
+
+    /* ── TECH GRID ── */
+    .tgrid {
+      display: grid; grid-template-columns: repeat(3,1fr);
+      gap: 1px; background: var(--bd); border: 1px solid var(--bd);
+    }
+    .tcard { background: var(--s1); padding: 28px 26px; transition: background .2s; }
+    .tcard:hover { background: var(--s2); }
+    .tcard-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .ttag {
+      font-family: var(--fm); font-size: 9px; letter-spacing: .18em;
+      text-transform: uppercase; padding: 4px 10px; border-radius: 2px;
+    }
+    .tnum { font-family: var(--fm); font-size: 9px; color: var(--dim); letter-spacing: .1em; }
+    .ttname { font-family: var(--fd); font-size: 19px; font-weight: 700; line-height: 1.2; margin-bottom: 10px; }
+    .ttdesc { font-size: 13px; color: var(--muted); line-height: 1.7; }
+    .ttdesc em { font-style: italic; color: var(--text); }
+
     /* ── FADE UP ── */
     .fu { opacity: 0; transform: translateY(22px); transition: opacity .65s ease, transform .65s ease; }
     .fu.in { opacity: 1; transform: translateY(0); }
@@ -330,11 +370,17 @@
       .ogrid { grid-template-columns: 1fr; gap: 40px; }
       .csec { padding: 80px 24px; }
       footer { padding: 28px 24px; flex-direction: column; align-items: flex-start; }
+      .tgrid { grid-template-columns: 1fr 1fr; }
+      .tcmp { grid-template-columns: 1fr; max-width: 100%; }
+      .tcmp-div { display: none; }
+      .tcmp-them { border-right: 1px solid var(--bd); border-bottom: none; }
+      .tcmp-us { border-top: none; }
     }
     @media (max-width: 580px) {
       .fgrid { grid-template-columns: 1fr; }
       .hbtns { flex-direction: column; align-items: flex-start; }
       .minner { grid-template-columns: 1fr; }
+      .tgrid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -480,6 +526,120 @@
           <h3 class="ftitle">Ships in days</h3>
           <p class="fdesc">Open-source core. No lock-in. Custom enterprise deployment at a fraction of the closed-source price.</p>
         </div>
+      </div>
+    </div>
+
+    <!-- TECH STACK -->
+    <section class="sec" id="tech" style="border-top:1px solid var(--bd);padding-bottom:0">
+      <div class="slbl fu"><span>—</span><span>WHY WE'RE DIFFERENT</span></div>
+      <h2 class="fu">Most RAG stops at step 1.<br>We stack <em>nine layers.</em></h2>
+      <p class="ssub fu">Generic RAG = embed + retrieve + generate. One bad chunk, one wrong answer. Cortex chains nine precision techniques so every layer catches what the last one missed.</p>
+      <div class="tcmp fu">
+        <div class="tcmp-col tcmp-them">
+          <div class="tcmp-head">Generic RAG</div>
+          <div class="tcmp-row"><span class="tcmp-x">✗</span> Single-query retrieval</div>
+          <div class="tcmp-row"><span class="tcmp-x">✗</span> Context-free chunks</div>
+          <div class="tcmp-row"><span class="tcmp-x">✗</span> No chunk grading</div>
+          <div class="tcmp-row"><span class="tcmp-x">✗</span> Vector search only</div>
+          <div class="tcmp-row"><span class="tcmp-x">✗</span> Repeat queries re-retrieve</div>
+          <div class="tcmp-row"><span class="tcmp-x">✗</span> Stateless — no memory</div>
+        </div>
+        <div class="tcmp-div"></div>
+        <div class="tcmp-col tcmp-us">
+          <div class="tcmp-head" style="color:var(--lime)">Cortex RAG</div>
+          <div class="tcmp-row"><span class="tcmp-ok">✓</span> 9-layer retrieval pipeline</div>
+          <div class="tcmp-row"><span class="tcmp-ok">✓</span> Context-enriched chunks</div>
+          <div class="tcmp-row"><span class="tcmp-ok">✓</span> LLM grades every chunk</div>
+          <div class="tcmp-row"><span class="tcmp-ok">✓</span> Vector + Graph + Reranker</div>
+          <div class="tcmp-row"><span class="tcmp-ok">✓</span> Semantic cache (0ms)</div>
+          <div class="tcmp-row"><span class="tcmp-ok">✓</span> Multi-turn chat memory</div>
+        </div>
+      </div>
+    </section>
+    <div style="max-width:1360px;margin:0 auto;padding:0 60px 100px">
+      <div class="tgrid">
+
+        <div class="tcard fu">
+          <div class="tcard-top">
+            <span class="ttag" style="background:rgba(45,212,191,.1);color:#2dd4bf">RETRIEVAL</span>
+            <span class="tnum">T.01</span>
+          </div>
+          <h3 class="ttname">Contextual Retrieval</h3>
+          <p class="ttdesc">Chunks carry document context before indexing — so the model knows <em>where</em> a passage sits, not just what it says. Cold chunks cause cold answers.</p>
+        </div>
+
+        <div class="tcard fu">
+          <div class="tcard-top">
+            <span class="ttag" style="background:rgba(45,212,191,.1);color:#2dd4bf">RETRIEVAL</span>
+            <span class="tnum">T.02</span>
+          </div>
+          <h3 class="ttname">RAG-Fusion + RRF</h3>
+          <p class="ttdesc">Multi-query rewriting generates parallel question variants. Reciprocal Rank Fusion merges results by relevance — catching documents a single query would miss.</p>
+        </div>
+
+        <div class="tcard fu">
+          <div class="tcard-top">
+            <span class="ttag" style="background:rgba(140,180,255,.1);color:#8cb4ff">KNOWLEDGE</span>
+            <span class="tnum">T.03</span>
+          </div>
+          <h3 class="ttname">GraphRAG</h3>
+          <p class="ttdesc">Entity relationships are modelled as a knowledge graph. Connected facts that vector search misses — cross-document reasoning, entity disambiguation — surface naturally.</p>
+        </div>
+
+        <div class="tcard fu">
+          <div class="tcard-top">
+            <span class="ttag" style="background:rgba(232,67,67,.1);color:#e84343">QUALITY</span>
+            <span class="tnum">T.04</span>
+          </div>
+          <h3 class="ttname">Corrective RAG (CRAG)</h3>
+          <p class="ttdesc">An LLM grades every retrieved chunk for relevance before generation. Low-confidence chunks are dropped or web-supplemented. Hallucinations die here.</p>
+        </div>
+
+        <div class="tcard fu">
+          <div class="tcard-top">
+            <span class="ttag" style="background:rgba(232,67,67,.1);color:#e84343">QUALITY</span>
+            <span class="tnum">T.05</span>
+          </div>
+          <h3 class="ttname">Neural Reranking</h3>
+          <p class="ttdesc">A CrossEncoder scores every (query, passage) pair on true semantic relevance — not just embedding similarity. The best chunks rise. The noise sinks.</p>
+        </div>
+
+        <div class="tcard fu">
+          <div class="tcard-top">
+            <span class="ttag" style="background:rgba(45,212,191,.1);color:#2dd4bf">RETRIEVAL</span>
+            <span class="tnum">T.06</span>
+          </div>
+          <h3 class="ttname">HyDE</h3>
+          <p class="ttdesc">Hypothetical Document Embeddings generate an ideal answer first, then retrieve against it. Sparse or vague queries find rich results they'd otherwise miss completely.</p>
+        </div>
+
+        <div class="tcard fu">
+          <div class="tcard-top">
+            <span class="ttag" style="background:rgba(200,241,53,.1);color:#c8f135">SPEED</span>
+            <span class="tnum">T.07</span>
+          </div>
+          <h3 class="ttname">Semantic Cache</h3>
+          <p class="ttdesc">Semantically similar questions skip retrieval entirely. First answer: &lt;200ms. Repeat questions: 0ms. Users feel the difference. Bills feel it too.</p>
+        </div>
+
+        <div class="tcard fu">
+          <div class="tcard-top">
+            <span class="ttag" style="background:rgba(140,180,255,.1);color:#8cb4ff">TRANSPARENCY</span>
+            <span class="tnum">T.08</span>
+          </div>
+          <h3 class="ttname">Live Reasoning</h3>
+          <p class="ttdesc">Watch the model think through documents in real time. Every retrieval step, every chunk scored, every decision — visible. No black box. Full audit trail.</p>
+        </div>
+
+        <div class="tcard fu">
+          <div class="tcard-top">
+            <span class="ttag" style="background:rgba(200,241,53,.1);color:#c8f135">MEMORY</span>
+            <span class="tnum">T.09</span>
+          </div>
+          <h3 class="ttname">Chat Memory</h3>
+          <p class="ttdesc">Multi-turn conversations work naturally. Context carries across questions — follow-ups, clarifications, and thread continuations all reference earlier exchanges.</p>
+        </div>
+
       </div>
     </div>
 
