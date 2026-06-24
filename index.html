@@ -81,13 +81,7 @@
       padding: 13px 60px;
     }
     .nlogo { display: flex; align-items: center; gap: 10px; }
-    .lbox {
-      width: 32px; height: 32px;
-      background: var(--lime);
-      display: flex; align-items: center; justify-content: center;
-      font-family: var(--fm); font-size: 14px; font-weight: 500; color: #070809;
-      flex-shrink: 0;
-    }
+    .limg { width: 34px; height: 34px; flex-shrink: 0; }
     .lname { font-family: var(--fb); font-size: 17px; font-weight: 500; }
     .ltag { font-family: var(--fm); font-size: 11px; color: var(--muted); }
     .nlinks { display: flex; align-items: center; gap: 36px; list-style: none; }
@@ -350,7 +344,7 @@
 
   <nav id="nav">
     <a href="#" class="nlogo">
-      <div class="lbox">C</div>
+      <img src="assets/logo.svg" alt="Cortex RAG" class="limg">
       <span class="lname">Cortex</span>
       <span class="ltag">/RAG</span>
     </a>
@@ -610,7 +604,7 @@
 
   <footer>
     <div class="nlogo">
-      <div class="lbox">C</div>
+      <img src="assets/logo.svg" alt="Cortex RAG" class="limg">
       <span class="lname" style="color:var(--muted)">Cortex</span>
       <span class="ltag">/RAG · Enterprise Knowledge Intelligence</span>
     </div>
