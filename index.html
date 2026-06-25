@@ -382,6 +382,99 @@
       .minner { grid-template-columns: 1fr; }
       .tgrid { grid-template-columns: 1fr; }
     }
+
+    /* ── DEMO MODAL ── */
+    body.dm-lock { overflow: hidden; }
+    .demo-ov {
+      position: fixed; inset: 0; z-index: 2000;
+      background: rgba(7,8,9,.94);
+      backdrop-filter: blur(14px) saturate(.6);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+      opacity: 0; pointer-events: none;
+      transition: opacity .5s ease;
+    }
+    .demo-ov.open { opacity: 1; pointer-events: all; }
+    .demo-modal {
+      background: var(--s1); border: 1px solid var(--bdh);
+      width: 100%; max-width: 600px; max-height: 88vh;
+      overflow-y: auto; border-radius: 6px;
+      transform: translateY(90px);
+      transition: transform 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .demo-ov.open .demo-modal { transform: translateY(0); }
+    .dm-hd {
+      background: var(--s2); border-bottom: 1px solid var(--bd);
+      padding: 12px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 1;
+    }
+    .dm-hd-l { display: flex; align-items: center; gap: 9px; }
+    .dm-hdot { width: 6px; height: 6px; border-radius: 50%; background: var(--lime); animation: lp 2s ease-in-out infinite; flex-shrink: 0; }
+    .dm-htitle { font-family: var(--fm); font-size: 10px; color: var(--muted); letter-spacing: .15em; }
+    .dm-close { background: none; border: none; color: var(--muted); font-size: 16px; cursor: none; padding: 0 4px; line-height: 1; transition: color .2s; }
+    .dm-close:hover { color: var(--text); }
+    .dm-s1 { padding: 26px 22px; }
+    .dm-s1-ttl { font-family: var(--fd); font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 6px; line-height: 1.2; }
+    .dm-s1-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; line-height: 1.6; }
+    .dm-inp-row { display: flex; background: var(--s2); border: 1px solid var(--bdh); margin-bottom: 16px; overflow: hidden; }
+    .dm-inp { flex: 1; background: none; border: none; outline: none; padding: 12px 14px; font-family: var(--fm); font-size: 12px; color: var(--text); caret-color: var(--lime); }
+    .dm-inp::placeholder { color: var(--muted); }
+    .dm-go { background: none; border: none; border-left: 1px solid var(--bd); padding: 12px 18px; color: var(--lime); font-family: var(--fm); font-size: 14px; cursor: none; transition: background .2s; }
+    .dm-go:hover { background: rgba(200,241,53,.08); }
+    .dm-or { display: flex; align-items: center; gap: 10px; font-family: var(--fm); font-size: 9px; letter-spacing: .2em; color: var(--muted); margin-bottom: 12px; }
+    .dm-or::before,.dm-or::after { content: ''; flex: 1; height: 1px; background: var(--bd); }
+    .dm-chips { display: flex; flex-direction: column; gap: 8px; }
+    .dm-chip { background: var(--s2); border: 1px solid var(--bd); padding: 11px 14px; text-align: left; font-family: var(--fm); font-size: 11px; color: var(--muted); cursor: none; transition: all .2s; letter-spacing: .04em; line-height: 1.5; }
+    .dm-chip:hover { border-color: var(--bdh); color: var(--text); background: var(--dim); }
+    .dm-qdisp { padding: 12px 22px; border-bottom: 1px solid var(--bd); }
+    .dm-qlbl { font-family: var(--fm); font-size: 9px; letter-spacing: .2em; color: var(--muted); display: block; margin-bottom: 4px; }
+    .dm-qtxtv { font-family: var(--fm); font-size: 12px; color: var(--text); line-height: 1.55; }
+    .dm-stages { padding: 6px 0; }
+    .dm-strow { display: flex; align-items: flex-start; gap: 12px; padding: 9px 22px; opacity: .22; transition: opacity .2s, background .2s; }
+    .dm-strow.active { opacity: 1; background: rgba(200,241,53,.04); border-left: 2px solid var(--lime); padding-left: 20px; }
+    .dm-strow.done { opacity: 1; }
+    .dm-stico {
+      width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--bd); margin-top: 2px;
+      font-family: var(--fm); font-size: 10px; color: var(--lime);
+      transition: all .25s; position: relative;
+    }
+    .dm-strow.active .dm-stico { border-color: var(--lime); }
+    .dm-strow.active .dm-stico::after { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--lime); animation: lp 1s ease-in-out infinite; }
+    .dm-strow.done .dm-stico { border: none; background: rgba(200,241,53,.12); }
+    .dm-stinfo { flex: 1; min-width: 0; }
+    .dm-sttype { font-family: var(--fm); font-size: 9px; letter-spacing: .14em; color: var(--muted); margin-bottom: 2px; }
+    .dm-stname { font-family: var(--fm); font-size: 12px; color: var(--text); }
+    .dm-stbar { height: 3px; background: var(--bd); border-radius: 1px; margin-top: 5px; overflow: hidden; display: none; }
+    .dm-strow.active .dm-stbar { display: block; }
+    .dm-stfill { height: 100%; background: var(--lime); width: 0%; transition: width .65s ease; }
+    .dm-stout { font-family: var(--fm); font-size: 10px; color: var(--muted); white-space: nowrap; margin-top: 3px; flex-shrink: 0; }
+    .dm-strow.active .dm-stout { color: var(--lime); }
+    .dm-ans { display: none; border-top: 1px solid var(--bd); background: var(--bg); padding: 16px 22px; }
+    .dm-ansmeta { display: flex; align-items: center; gap: 8px; font-family: var(--fm); font-size: 9px; letter-spacing: .18em; color: var(--muted); margin-bottom: 10px; }
+    .dm-ansdot { width: 5px; height: 5px; border-radius: 50%; background: var(--lime); flex-shrink: 0; }
+    .dm-anshl { color: var(--lime); }
+    .dm-anstxt { font-family: var(--fm); font-size: 12px; color: #90b0cc; line-height: 1.85; margin-bottom: 12px; }
+    .dm-cite { border-left: 2px solid var(--lime); padding: 8px 12px; margin-bottom: 16px; }
+    .dm-citelbl { font-family: var(--fm); font-size: 9px; letter-spacing: .18em; color: var(--lime); margin-bottom: 3px; }
+    .dm-citesrc { font-family: var(--fm); font-size: 10px; color: var(--muted); }
+    .dm-cta { padding-top: 14px; border-top: 1px solid var(--bd); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    .dm-cta-h { font-family: var(--fd); font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+    .dm-cta-s { font-family: var(--fm); font-size: 10px; color: var(--muted); }
+    .dm-cta-btns { display: flex; align-items: center; gap: 12px; }
+    .dm-try { font-family: var(--fm); font-size: 10px; color: var(--muted); cursor: none; background: none; border: none; text-decoration: underline; text-underline-offset: 3px; padding: 0; transition: color .2s; }
+    .dm-try:hover { color: var(--text); }
+    .dm-book { font-family: var(--fm); font-size: 10px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; background: var(--lime); color: var(--bg); padding: 11px 22px; display: inline-block; transition: background .2s; }
+    .dm-book:hover { background: #d8ff55; }
+    @media (max-width: 640px) {
+      .dm-s1 { padding: 20px 16px; }
+      .dm-qdisp, .dm-stages, .dm-ans { padding-left: 16px; padding-right: 16px; }
+      .dm-strow { padding-left: 16px; padding-right: 16px; }
+      .dm-strow.active { padding-left: 14px; }
+      .dm-cta { flex-direction: column; align-items: flex-start; }
+    }
   </style>
 </head>
 <body>
@@ -400,7 +493,7 @@
       <li><a href="#how">How it works</a></li>
       <li><a href="https://github.com/SaiAkhil066/CORTEX-AI-SUPER-RAG" target="_blank" rel="noopener">GitHub ↗</a></li>
     </ul>
-    <a href="mailto:saiakhil066@gmail.com?subject=CORTEX RAG Enterprise" class="ncta">BOOK A DEMO →</a>
+    <a href="#" onclick="openDemo(); return false;" class="ncta">BOOK A DEMO →</a>
   </nav>
 
   <main>
@@ -418,7 +511,7 @@
         </h1>
         <p class="hsub">Cortex turns scattered enterprise data into <strong>cited, permission-aware answers</strong>. No hallucinations. No black boxes. Just receipts.</p>
         <div class="hbtns">
-          <a href="mailto:saiakhil066@gmail.com?subject=CORTEX RAG — Enterprise Inquiry" class="btn blime">REQUEST A PILOT →</a>
+          <a href="#" onclick="openDemo(); return false;" class="btn blime">REQUEST A PILOT →</a>
           <a href="https://github.com/SaiAkhil066/CORTEX-AI-SUPER-RAG" target="_blank" rel="noopener" class="btn bghost">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
             VIEW SOURCE
@@ -775,6 +868,67 @@
     <div class="fcopy">Open Source · MIT License</div>
   </footer>
 
+  <!-- ── DEMO MODAL ── -->
+  <div id="demo-ov" class="demo-ov" role="dialog" aria-modal="true" aria-label="CORTEX RAG Live Pipeline Demo">
+    <div class="demo-modal">
+
+      <div class="dm-hd">
+        <div class="dm-hd-l">
+          <span class="dm-hdot"></span>
+          <span class="dm-htitle">CORTEX RAG · LIVE PIPELINE DEMO</span>
+        </div>
+        <button class="dm-close" onclick="closeDemo()" aria-label="Close">✕</button>
+      </div>
+
+      <!-- Screen 1: query picker -->
+      <div id="dm-s1" class="dm-s1">
+        <div class="dm-s1-ttl">Ask anything from our knowledge base</div>
+        <p class="dm-s1-sub">Watch all 9 retrieval layers fire in real time.</p>
+        <div class="dm-inp-row">
+          <input id="dm-inp" class="dm-inp" type="text" placeholder="Type your question…" autocomplete="off" spellcheck="false" />
+          <button class="dm-go" onclick="dmSubmit()" aria-label="Run query">→</button>
+        </div>
+        <div class="dm-or">OR CHOOSE A PRESET</div>
+        <div class="dm-chips">
+          <button class="dm-chip" onclick="dmPickPreset(0)">→ Who built CORTEX and why does it exist?</button>
+          <button class="dm-chip" onclick="dmPickPreset(1)">→ What makes CORTEX different from every other RAG tool?</button>
+          <button class="dm-chip" onclick="dmPickPreset(2)">→ What is the vision behind CORTEX RAG?</button>
+        </div>
+      </div>
+
+      <!-- Screen 2: pipeline + answer -->
+      <div id="dm-s2" style="display:none">
+        <div class="dm-qdisp">
+          <span class="dm-qlbl">QUERY</span>
+          <div id="dm-qtxt" class="dm-qtxtv"></div>
+        </div>
+        <div id="dm-stages" class="dm-stages"></div>
+        <div id="dm-ans" class="dm-ans">
+          <div class="dm-ansmeta">
+            <span class="dm-ansdot"></span>
+            RETRIEVED &middot; <span id="dm-ans-ms" class="dm-anshl"></span> &middot; <span id="dm-ans-conf" class="dm-anshl"></span>
+          </div>
+          <div id="dm-ans-txt" class="dm-anstxt"></div>
+          <div class="dm-cite">
+            <div class="dm-citelbl">SOURCES</div>
+            <div id="dm-ans-src" class="dm-citesrc"></div>
+          </div>
+          <div class="dm-cta">
+            <div>
+              <div class="dm-cta-h">See this on your actual data.</div>
+              <div class="dm-cta-s">14-day deployment &middot; no vendor lock-in</div>
+            </div>
+            <div class="dm-cta-btns">
+              <button class="dm-try" onclick="dmTryAnother()">try another</button>
+              <a href="https://calendly.com/saiakhil066" target="_blank" rel="noopener" class="dm-book">BOOK A CALL →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <script>
     // ── CURSOR ──
     const cur = document.getElementById('cur');
@@ -854,6 +1008,145 @@
       });
     }
     setTimeout(runDemo,900);
+  </script>
+
+  <script>
+    // ── PIPELINE THEATER ──
+    const DM_QUERIES = [
+      'Who built CORTEX and why does it exist?',
+      'What makes CORTEX different from every other RAG tool?',
+      'What is the vision behind CORTEX RAG?'
+    ];
+    const DM_ANSWERS = [
+      { text: 'CORTEX was built by Sai Akhil — a developer who got tired of watching enterprises drown in their own knowledge. Every answer buried in a Slack thread. Every policy lost in a Drive folder. He believed the truth was always in your data. You just needed a system that could find it, cite it, and prove it. So he built one.', src: 'Founder\'s Notes · Origin Story · Core Principles v1', ms: '91ms', conf: '99% confidence' },
+      { text: 'Most RAG tools retrieve. CORTEX understands. Nine precision layers — contextual retrieval, graph reasoning, LLM grading, neural reranking — stack on each other so every answer comes with a receipt. Not a guess. Not a hallucination. A cited, permission-aware fact your auditors, lawyers, and team can stand behind. That\'s the difference.', src: 'Architecture Overview · 9-Layer Pipeline Doc · Product Philosophy', ms: '104ms', conf: '97% confidence' },
+      { text: 'A world where no team loses hours searching for answers they already have. Where AI doesn\'t hallucinate — it cites. Where knowledge is a competitive advantage, and accessing it takes seconds, not weeks. CORTEX is being built as the infrastructure for that world — open-source, enterprise-ready, and shipping in 14 days.', src: 'Vision Document 2026 · Roadmap v3 · Mission Statement', ms: '88ms', conf: '98% confidence' }
+    ];
+    const DM_STAGES = [
+      { tag:'RETRIEVAL', col:'#2dd4bf', num:'T.01', name:'Contextual Retrieval',      out:'12 chunks indexed'       },
+      { tag:'RETRIEVAL', col:'#2dd4bf', num:'T.02', name:'RAG-Fusion + RRF',          out:'3 sub-queries merged'     },
+      { tag:'KNOWLEDGE', col:'#8cb4ff', num:'T.03', name:'GraphRAG',                  out:'7 entities linked'        },
+      { tag:'RETRIEVAL', col:'#2dd4bf', num:'T.06', name:'HyDE',                      out:'Ideal answer embedded'    },
+      { tag:'QUALITY',   col:'#e84343', num:'T.04', name:'Corrective RAG (CRAG)',      out:'9 kept · 3 dropped'       },
+      { tag:'QUALITY',   col:'#e84343', num:'T.05', name:'Neural Reranking',           out:'Best chunks surfaced'     },
+      { tag:'SPEED',     col:'#c8f135', num:'T.07', name:'Semantic Cache',             out:'Cache miss — fresh run'   },
+      { tag:'TRANSPARENCY',col:'#8cb4ff',num:'T.08',name:'Live Reasoning',            out:'Audit log written'        },
+      { tag:'MEMORY',    col:'#c8f135', num:'T.09', name:'Chat Memory',               out:'Context stored'           }
+    ];
+
+    const dmOv = document.getElementById('demo-ov');
+    const dmModal = dmOv.querySelector('.demo-modal');
+
+    function openDemo() {
+      dmOv.classList.add('open');
+      document.body.classList.add('dm-lock');
+      dmShowS1();
+      setTimeout(() => document.getElementById('dm-inp').focus(), 400);
+    }
+    function closeDemo() {
+      dmOv.classList.remove('open');
+      document.body.classList.remove('dm-lock');
+    }
+    dmOv.addEventListener('click', e => { if (e.target === dmOv) closeDemo(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && dmOv.classList.contains('open')) closeDemo(); });
+
+    document.getElementById('dm-inp').addEventListener('keydown', e => { if (e.key === 'Enter') dmSubmit(); });
+
+    function dmShowS1() {
+      document.getElementById('dm-s1').style.display = 'block';
+      document.getElementById('dm-s2').style.display = 'none';
+      document.getElementById('dm-inp').value = '';
+      document.getElementById('dm-ans').style.display = 'none';
+      dmModal.scrollTop = 0;
+    }
+
+    function dmMatchPreset(t) {
+      t = t.toLowerCase();
+      if (/who|built|founder|origin|why|sai|akhil|exist|story|create/.test(t)) return 0;
+      if (/differ|unique|pipeline|layer|feature|better|special|how|what make/.test(t)) return 1;
+      if (/vision|future|goal|mission|where|roadmap|headed|going|plan|dream/.test(t)) return 2;
+      return 0;
+    }
+
+    function dmPickPreset(i) { dmRunPipeline(i, DM_QUERIES[i]); }
+    function dmSubmit() {
+      const val = document.getElementById('dm-inp').value.trim();
+      if (!val) return;
+      dmRunPipeline(dmMatchPreset(val), val);
+    }
+
+    function dmRunPipeline(qi, queryText) {
+      document.getElementById('dm-s1').style.display = 'none';
+      document.getElementById('dm-s2').style.display = 'block';
+      document.getElementById('dm-qtxt').textContent = '“' + queryText + '”';
+      document.getElementById('dm-ans').style.display = 'none';
+      dmModal.scrollTop = 0;
+
+      const sl = document.getElementById('dm-stages');
+      sl.innerHTML = '';
+      DM_STAGES.forEach((s, idx) => {
+        const row = document.createElement('div');
+        row.className = 'dm-strow';
+        row.id = 'dmst' + idx;
+        row.innerHTML =
+          '<div class="dm-stico" id="dmico' + idx + '"></div>' +
+          '<div class="dm-stinfo">' +
+            '<div class="dm-sttype">' + s.num + ' · <span style="color:' + s.col + '">' + s.tag + '</span></div>' +
+            '<div class="dm-stname">' + s.name + '</div>' +
+            '<div class="dm-stbar"><div class="dm-stfill" id="dmfill' + idx + '"></div></div>' +
+          '</div>' +
+          '<div class="dm-stout" id="dmout' + idx + '">' + s.out + '</div>';
+        sl.appendChild(row);
+      });
+
+      setTimeout(() => dmAnimStage(0, qi), 180);
+    }
+
+    function dmAnimStage(idx, qi) {
+      if (idx >= DM_STAGES.length) { dmShowAnswer(qi); return; }
+      const row = document.getElementById('dmst' + idx);
+      const fill = document.getElementById('dmfill' + idx);
+      const out = document.getElementById('dmout' + idx);
+      row.classList.add('active');
+      out.textContent = 'running…';
+      setTimeout(() => { fill.style.width = '100%'; }, 40);
+      const dur = 370 + Math.random() * 340;
+      setTimeout(() => {
+        row.classList.remove('active');
+        row.classList.add('done');
+        document.getElementById('dmico' + idx).textContent = '✓';
+        out.textContent = DM_STAGES[idx].out;
+        dmAnimStage(idx + 1, qi);
+      }, dur);
+    }
+
+    function dmShowAnswer(qi) {
+      const a = DM_ANSWERS[qi];
+      document.getElementById('dm-ans-ms').textContent = a.ms;
+      document.getElementById('dm-ans-conf').textContent = a.conf;
+      document.getElementById('dm-ans-src').textContent = a.src;
+      const ans = document.getElementById('dm-ans');
+      ans.style.display = 'block';
+      const el = document.getElementById('dm-ans-txt');
+      el.textContent = '';
+      let i = 0;
+      const iv = setInterval(() => {
+        if (i < a.text.length) el.textContent += a.text[i++];
+        else clearInterval(iv);
+      }, 14);
+      setTimeout(() => { dmModal.scrollTop = dmModal.scrollHeight; }, 120);
+    }
+
+    function dmTryAnother() {
+      dmShowS1();
+      setTimeout(() => document.getElementById('dm-inp').focus(), 80);
+    }
+
+    // extend cursor hover to demo modal interactive elements
+    document.querySelectorAll('.dm-close,.dm-go,.dm-chip,.dm-try,.dm-book').forEach(el => {
+      el.addEventListener('mouseenter', () => { cur.style.width='42px'; cur.style.height='42px'; cur.style.borderColor='rgba(200,241,53,.8)'; });
+      el.addEventListener('mouseleave', () => { cur.style.width='26px'; cur.style.height='26px'; cur.style.borderColor='rgba(200,241,53,.5)'; });
+    });
   </script>
 </body>
 </html>
