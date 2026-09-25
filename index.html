@@ -3,1149 +3,362 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CORTEX RAG — Answers your auditors will trust.</title>
-  <meta name="description" content="Cortex turns scattered enterprise knowledge into cited, permission-aware answers. No hallucinations. No black boxes. Ships in 14 days.">
-  <meta property="og:title" content="CORTEX RAG — Answers your auditors will trust.">
-  <meta property="og:description" content="Cited, permission-aware knowledge retrieval. Ships in 14 days.">
+  <title>Cortex RAG | Cited answers from your company's documents</title>
+  <meta name="description" content="We build private AI assistants over your company's documents. Every answer points to the page it came from, and everything runs on infrastructure you control.">
+  <meta property="og:title" content="Cortex RAG | Answers you can check">
+  <meta property="og:description" content="Private AI assistants over your documents, with every answer cited to the page. Open-source core.">
   <meta property="og:type" content="website">
+  <meta name="theme-color" content="#F2F4F7">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;1,700;1,800&family=JetBrains+Mono:wght@300;400;500&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --bg: #070809;
-      --s1: #0d0f14;
-      --s2: #131720;
-      --bd: #1c2130;
-      --bdh: #262f44;
-      --lime: #c8f135;
-      --red: #e84343;
-      --text: #e3ddd0;
-      --muted: #5a6380;
-      --dim: #1e2638;
-      --fd: 'Playfair Display', Georgia, serif;
-      --fm: 'JetBrains Mono', monospace;
-      --fb: 'Outfit', system-ui, sans-serif;
+      --paper: #F2F4F7;
+      --sheet: #FFFFFF;
+      --ink: #1B2340;
+      --muted: #5B6479;
+      --rule: #D5DAE3;
+      --cite: #4B45C6;
+      --mark: #FFE45C;
+      --display: 'Bricolage Grotesque', system-ui, sans-serif;
+      --text: 'Newsreader', Georgia, serif;
+      --wrap: 1160px;
+      --gutter: 24px;
     }
 
-    html { scroll-behavior: smooth; }
-
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
     body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--fb);
-      font-size: 16px;
-      line-height: 1.6;
-      overflow-x: hidden;
-      cursor: none;
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--text);
+      font-size: 1.125rem;
+      line-height: 1.62;
+      font-optical-sizing: auto;
+      -webkit-font-smoothing: antialiased;
     }
+    img { display: block; max-width: 100%; }
+    a { color: var(--cite); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+    a:hover { text-decoration-thickness: 2px; }
+    :focus-visible { outline: 2px solid var(--cite); outline-offset: 3px; border-radius: 3px; }
+    .wrap { max-width: var(--wrap); margin: 0 auto; padding: 0 var(--gutter); }
+    .skip { position: absolute; left: -999px; top: 8px; background: var(--ink); color: #fff; padding: 8px 14px; z-index: 10; }
+    .skip:focus { left: 8px; }
 
-    a { color: inherit; text-decoration: none; }
+    /* ── Type ── */
+    h1, h2, h3 { font-family: var(--display); font-weight: 700; letter-spacing: -0.02em; margin: 0; }
+    h1 { font-size: clamp(2.75rem, 7.2vw, 5.4rem); line-height: 1; letter-spacing: -0.026em; }
+    h2 { font-size: clamp(1.9rem, 3.6vw, 2.75rem); line-height: 1.08; }
+    h3 { font-size: 1.2rem; line-height: 1.3; font-weight: 600; letter-spacing: -0.01em; }
+    p { margin: 0; }
+    .lede { font-size: clamp(1.2rem, 1.8vw, 1.4rem); line-height: 1.5; color: var(--ink); max-width: 34ch; }
+    .body { color: var(--muted); max-width: 62ch; }
 
-    /* ── CURSOR ── */
-    #cur {
-      position: fixed;
-      width: 26px; height: 26px;
-      border: 1.5px solid rgba(200,241,53,0.5);
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 9999;
-      transform: translate(-50%,-50%);
-      transition: width .2s, height .2s, border-color .2s, opacity .3s;
-      opacity: 0;
-    }
-
-    /* ── CANVAS ── */
-    #bgc {
-      position: fixed; inset: 0;
-      width: 100%; height: 100%;
-      z-index: 0; pointer-events: none;
-    }
-
-    nav, main, footer { position: relative; z-index: 1; }
-
-    /* ── NAV ── */
-    nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      padding: 18px 60px;
-      display: flex; align-items: center; justify-content: space-between;
-      transition: all .3s;
-    }
-    nav.sc {
-      background: rgba(7,8,9,.92);
-      backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--bd);
-      padding: 13px 60px;
-    }
-    .nlogo { display: flex; align-items: center; gap: 10px; }
-    .limg { width: 34px; height: 34px; flex-shrink: 0; }
-    .lname { font-family: var(--fb); font-size: 17px; font-weight: 500; }
-    .ltag { font-family: var(--fm); font-size: 11px; color: var(--muted); }
-    .nlinks { display: flex; align-items: center; gap: 36px; list-style: none; }
-    .nlinks a { font-size: 14px; color: var(--muted); transition: color .2s; }
-    .nlinks a:hover { color: var(--text); }
-    .ncta {
-      font-family: var(--fm); font-size: 11px; font-weight: 500;
-      letter-spacing: .12em; text-transform: uppercase;
-      color: #070809; background: var(--lime); padding: 10px 22px;
-      transition: background .2s;
-    }
-    .ncta:hover { background: #d8ff55; }
-
-    /* ── HERO ── */
-    .hero {
-      min-height: 100vh;
-      padding: 130px 60px 80px;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 64px;
-      align-items: center;
-      max-width: 1360px;
-      margin: 0 auto;
-    }
-    .live {
-      display: inline-flex; align-items: center; gap: 9px;
-      font-family: var(--fm); font-size: 11px; color: var(--muted);
-      letter-spacing: .05em; margin-bottom: 28px;
-    }
-    .ldot {
-      width: 7px; height: 7px; border-radius: 50%; background: var(--lime);
-      animation: lp 2s ease-in-out infinite; flex-shrink: 0;
-    }
-    @keyframes lp {
-      0%,100% { opacity:1; box-shadow: 0 0 0 0 rgba(200,241,53,.4); }
-      50% { opacity:.7; box-shadow: 0 0 0 5px rgba(200,241,53,0); }
-    }
-    h1 {
-      font-family: var(--fd);
-      font-size: clamp(48px, 5.2vw, 84px);
-      font-weight: 800; line-height: 1.02; letter-spacing: -.02em;
-      margin-bottom: 28px;
-    }
-    h1 em { font-style: italic; color: var(--lime); font-weight: 700; }
-    .strike {
-      color: var(--muted);
-      text-decoration: line-through;
-      text-decoration-color: var(--red);
-      text-decoration-thickness: 3px;
-    }
-    .hsub {
-      font-size: 17px; color: var(--muted); line-height: 1.75;
-      max-width: 440px; margin-bottom: 36px;
-    }
-    .hsub strong { color: var(--text); font-weight: 500; }
-    .hbtns { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-bottom: 48px; }
+    /* ── Buttons ── */
     .btn {
-      font-family: var(--fm); font-size: 11px; font-weight: 500;
-      letter-spacing: .12em; text-transform: uppercase;
-      padding: 13px 26px; display: inline-flex; align-items: center; gap: 8px;
-      transition: all .2s; cursor: none;
+      display: inline-flex; align-items: center; gap: 10px;
+      font-family: var(--display); font-weight: 600; font-size: 1rem;
+      padding: 13px 22px; border-radius: 999px; text-decoration: none;
+      border: 1.5px solid var(--ink); transition: background .15s, color .15s;
     }
-    .blime { background: var(--lime); color: #070809; }
-    .blime:hover { background: #d8ff55; transform: translateX(2px); }
-    .bghost { background: transparent; color: var(--muted); border: 1px solid var(--bd); }
-    .bghost:hover { border-color: var(--bdh); color: var(--text); }
-    .hstats { display: flex; gap: 40px; padding-top: 28px; border-top: 1px solid var(--bd); }
-    .hsn { display: block; font-family: var(--fd); font-size: 34px; font-weight: 700; line-height: 1; margin-bottom: 6px; }
-    .hsn sup { font-size: 16px; vertical-align: super; }
-    .hsl { display: block; font-family: var(--fm); font-size: 9px; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+    .btn-solid { background: var(--ink); color: var(--paper); }
+    .btn-solid:hover { background: var(--cite); border-color: var(--cite); }
+    .btn-line { color: var(--ink); background: transparent; }
+    .btn-line:hover { background: var(--ink); color: var(--paper); }
 
-    /* ── TERMINAL ── */
-    .term {
-      background: var(--s1); border: 1px solid var(--bdh); border-radius: 8px;
-      overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,.6);
-      margin-bottom: 16px;
-    }
-    .thd {
-      background: var(--s2); padding: 12px 18px;
-      display: flex; align-items: center; gap: 8px;
-      border-bottom: 1px solid var(--bd);
-    }
-    .tdots { display: flex; gap: 6px; }
-    .tdot { width: 10px; height: 10px; border-radius: 50%; }
-    .ttitle { font-family: var(--fm); font-size: 10px; color: var(--muted); flex: 1; text-align: center; letter-spacing: .1em; }
-    .tbody { padding: 22px; font-family: var(--fm); font-size: 12px; line-height: 1.9; min-height: 240px; }
-    .tprompt { color: var(--muted); }
-    .tresp { margin-top: 12px; border-top: 1px solid var(--bd); padding-top: 12px; }
-    .tstat {
-      display: flex; align-items: center; gap: 8px;
-      font-size: 9px; letter-spacing: .2em; text-transform: uppercase; color: var(--muted);
-      margin-bottom: 10px;
-    }
-    .tsdot { width: 6px; height: 6px; border-radius: 50%; background: var(--lime); flex-shrink: 0; }
-    .tstat span { color: var(--lime); }
-    .tans { color: #90b0cc; font-size: 11px; line-height: 1.75; }
-    .tcite { margin-top: 12px; padding: 8px 12px; border-left: 2px solid var(--lime); }
-    .tclbl { font-size: 9px; letter-spacing: .2em; text-transform: uppercase; color: var(--lime); margin-bottom: 4px; }
-    .tcsrc { font-size: 10px; color: var(--muted); }
-    .cblink { display: inline-block; width: 7px; height: 13px; background: var(--lime); vertical-align: middle; animation: bl 1s infinite; }
-    @keyframes bl { 0%,100%{opacity:1} 50%{opacity:0} }
+    /* ── Nav ── */
+    header.top { position: sticky; top: 0; z-index: 5; background: rgba(242,244,247,.9); backdrop-filter: blur(8px); border-bottom: 1px solid transparent; transition: border-color .2s; }
+    header.top.scrolled { border-bottom-color: var(--rule); }
+    .nav { display: flex; align-items: center; gap: 28px; height: 68px; }
+    .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); font-family: var(--display); font-weight: 700; font-size: 1.15rem; letter-spacing: -0.01em; margin-right: auto; }
+    .brand img { width: 34px; height: 34px; }
+    .nav ul { display: flex; gap: 26px; list-style: none; margin: 0; padding: 0; }
+    .nav ul a { font-family: var(--display); font-size: .95rem; color: var(--muted); text-decoration: none; }
+    .nav ul a:hover { color: var(--ink); }
+    .nav .btn { padding: 9px 18px; font-size: .92rem; }
 
-    /* ── SECTIONS ── */
-    .sec { padding: 100px 60px; max-width: 1360px; margin: 0 auto; }
-    .slbl {
-      display: flex; align-items: center; gap: 10px;
-      font-family: var(--fm); font-size: 10px; letter-spacing: .25em; text-transform: uppercase;
-      color: var(--muted); margin-bottom: 36px;
-    }
-    .snum { color: var(--muted); }
-    h2 {
-      font-family: var(--fd);
-      font-size: clamp(32px, 3.2vw, 60px);
-      font-weight: 800; line-height: 1.06; letter-spacing: -.02em; margin-bottom: 20px;
-    }
-    h2 em { font-style: italic; color: var(--lime); }
-    .ssub { font-size: 17px; color: var(--muted); max-width: 520px; line-height: 1.7; margin-bottom: 56px; }
+    /* ── Hero ── */
+    .hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr); gap: 64px; align-items: center; padding-top: 72px; padding-bottom: 96px; }
+    .hero h1 { margin-bottom: 28px; }
+    .hero .lede { margin-bottom: 34px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 22px; }
+    .fine { font-size: .98rem; color: var(--muted); max-width: 44ch; }
 
-    /* ── PROBLEM ── */
-    .pgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    .pcard {
-      background: var(--s1); border: 1px solid var(--bd); padding: 32px;
-      transition: border-color .25s;
+    /* The specimen: question → cited answer → source page */
+    .specimen { position: relative; }
+    .qa { background: var(--sheet); border: 1px solid var(--rule); border-radius: 14px; padding: 22px 24px 20px; position: relative; z-index: 2; box-shadow: 0 1px 0 var(--rule); }
+    .q { font-family: var(--display); font-weight: 600; font-size: 1.02rem; line-height: 1.4; padding-bottom: 14px; margin-bottom: 14px; border-bottom: 1px solid var(--rule); }
+    .q small { display: block; font-weight: 400; color: var(--muted); font-size: .85rem; margin-bottom: 4px; }
+    .a { font-size: 1.12rem; line-height: 1.55; }
+    .ref {
+      font: 600 .78rem/1 var(--display); color: var(--cite); background: #E4E2FA;
+      border: 0; border-radius: 5px; padding: 3px 6px 4px; margin-left: 3px; vertical-align: 3px; cursor: pointer;
     }
-    .pcard:hover { border-color: var(--bdh); }
-    .pnum { font-family: var(--fm); font-size: 10px; letter-spacing: .2em; color: var(--muted); margin-bottom: 16px; }
-    .ptitle { font-family: var(--fd); font-size: 22px; font-weight: 700; line-height: 1.2; margin-bottom: 12px; }
-    .ptitle em { font-style: italic; color: var(--lime); }
-    .pdesc { font-size: 13px; color: var(--muted); line-height: 1.7; }
+    .ref:hover, .ref[aria-expanded="true"] { background: var(--cite); color: #fff; }
 
-    /* ── FEATURES ── */
-    .fgrid {
-      display: grid; grid-template-columns: repeat(3,1fr);
-      gap: 1px; background: var(--bd); border: 1px solid var(--bd);
+    .page {
+      background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px;
+      margin: -10px 18px 0 38px; padding: 30px 24px 22px; position: relative; z-index: 1;
+      box-shadow: 0 18px 40px -24px rgba(27,35,64,.35);
+      transform: rotate(0.6deg);
     }
-    .fcard { background: var(--s1); padding: 32px 28px; transition: background .25s; }
-    .fcard:hover { background: var(--s2); }
-    .fiw {
-      width: 38px; height: 38px; border-radius: 4px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 17px; margin-bottom: 20px;
+    .page-head { display: flex; justify-content: space-between; gap: 12px; font-family: var(--display); font-size: .82rem; color: var(--muted); margin-bottom: 14px; }
+    .page-head strong { color: var(--ink); font-weight: 600; }
+    .page table { width: 100%; border-collapse: collapse; font-size: .9rem; line-height: 1.35; font-variant-numeric: tabular-nums; }
+    .page caption { text-align: left; font-weight: 500; font-size: .92rem; padding-bottom: 8px; }
+    .page th { text-align: right; font-weight: 500; color: var(--muted); padding: 0 0 6px 10px; font-size: .82rem; }
+    .page td { padding: 6px 0 6px 10px; text-align: right; white-space: nowrap; vertical-align: top; }
+    .page td:first-child { text-align: left; padding-left: 0; white-space: normal; }
+    .page tr.dim td { color: #9AA2B4; }
+    /* Highlighter: one stroke per cell, swept in left to right on load */
+    .page tr.cited td {
+      background: linear-gradient(var(--mark), var(--mark)) no-repeat 0 50% / 100% 78%;
+      animation: sweep .7s cubic-bezier(.3,.7,.3,1) both;
     }
-    .ftitle { font-family: var(--fd); font-size: 20px; font-weight: 700; margin-bottom: 10px; line-height: 1.2; }
-    .fdesc { font-size: 13px; color: var(--muted); line-height: 1.7; }
+    .page tr.cited td:nth-child(2) { font-weight: 600; }
+    .page.pulse { outline: 2px solid var(--cite); outline-offset: 4px; }
+    .specimen figcaption { margin: 26px 18px 0 38px; font-size: .92rem; color: var(--muted); line-height: 1.5; }
 
-    /* ── METRICS ── */
-    .mband { border-top: 1px solid var(--bd); border-bottom: 1px solid var(--bd); }
-    .minner { max-width: 1360px; margin: 0 auto; display: grid; grid-template-columns: repeat(4,1fr); }
-    .mcell { padding: 60px 40px; text-align: center; border-right: 1px solid var(--bd); }
-    .mcell:last-child { border-right: none; }
-    .mval {
-      font-family: var(--fd); font-size: 76px; font-weight: 800;
-      color: var(--text); line-height: 1; letter-spacing: -.03em; margin-bottom: 14px;
-      display: block;
-    }
-    .mval sup { font-size: 34px; vertical-align: super; }
-    .mlbl { font-family: var(--fm); font-size: 9px; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+    @keyframes sweep { from { background-size: 0% 78%; } to { background-size: 100% 78%; } }
+    .page tr.cited td:nth-child(1) { animation-delay: .9s; }
+    .page tr.cited td:nth-child(2) { animation-delay: 1.3s; }
+    .page tr.cited td:nth-child(3) { animation-delay: 1.4s; }
+    .page tr.cited td:nth-child(4) { animation-delay: 1.5s; }
 
-    /* ── USE CASES ── */
-    .bgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    .bcard {
-      background: var(--s1); border: 1px solid var(--bd); padding: 36px;
-      transition: border-color .25s, background .25s;
-    }
-    .bcard:hover { border-color: var(--bdh); background: var(--s2); }
-    .btags { display: flex; gap: 0; flex-wrap: wrap; margin-bottom: 22px; }
-    .btag {
-      font-family: var(--fm); font-size: 9px; letter-spacing: .2em;
-      text-transform: uppercase; color: var(--muted);
-    }
-    .btag + .btag::before { content: ' · '; white-space: pre; }
-    .btitle { font-family: var(--fd); font-size: 22px; font-weight: 700; line-height: 1.2; margin-bottom: 14px; }
-    .btitle em { font-style: italic; color: var(--lime); }
-    .bdesc { font-size: 13px; color: var(--muted); line-height: 1.7; margin-bottom: 24px; }
-    .bquote {
-      border-top: 1px solid var(--bd); padding-top: 20px;
-      font-family: var(--fd); font-size: 14px; font-style: italic;
-      color: var(--muted); line-height: 1.6; position: relative; padding-left: 22px;
-    }
-    .bquote::before {
-      content: '"'; position: absolute; left: 0; top: 16px;
-      font-family: var(--fd); font-size: 30px; color: var(--red); line-height: 1;
-    }
+    /* ── Sections ── */
+    section { padding: 96px 0; border-top: 1px solid var(--rule); }
+    .split { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 64px; align-items: start; }
+    .split h2 { margin-bottom: 20px; }
+    .sticky { position: sticky; top: 108px; }
 
-    /* ── HOW IT WORKS ── */
-    .sgrid { display: grid; grid-template-columns: repeat(3,1fr); margin-top: 48px; }
-    .step { padding: 0 44px 0 0; border-right: 1px solid var(--bd); }
-    .step:last-child { border-right: none; padding-right: 0; }
-    .step:not(:first-child) { padding-left: 44px; }
-    .sn { font-family: var(--fm); font-size: 10px; letter-spacing: .2em; color: var(--muted); display: block; margin-bottom: 22px; }
-    .stitle { font-family: var(--fd); font-size: 26px; font-weight: 700; margin-bottom: 14px; line-height: 1.2; }
-    .sdesc { font-size: 14px; color: var(--muted); line-height: 1.7; }
+    /* What we build: a definition list, not cards */
+    .offer { margin: 0; }
+    .offer div { display: grid; grid-template-columns: minmax(0, 13rem) minmax(0, 1fr); gap: 24px; padding: 22px 0; border-top: 1px solid var(--rule); }
+    .offer div:last-child { border-bottom: 1px solid var(--rule); }
+    .offer dt { font-family: var(--display); font-weight: 600; font-size: 1.08rem; line-height: 1.35; }
+    .offer dd { margin: 0; color: var(--muted); }
+    .offer .tag { display: inline-block; font: 500 .78rem/1 var(--display); color: var(--cite); border: 1px solid #CFCDF3; border-radius: 999px; padding: 4px 9px 5px; margin-top: 8px; }
 
-    /* ── OSS ── */
-    .ogrid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; }
-    .ocode {
-      background: var(--s1); border: 1px solid var(--bd); padding: 26px;
-      font-family: var(--fm); font-size: 12px; line-height: 1.9;
-    }
-    .cln { color: var(--dim); display: inline-block; min-width: 20px; margin-right: 14px; text-align: right; user-select: none; }
-    .ck { color: #8cb4ff; } .cf { color: #dcdcaa; } .cs { color: #ce9178; } .cc { color: #6a9955; } .cv { color: #9cdcfe; }
+    /* Pipeline: a real sequence, so it is numbered */
+    .steps { list-style: none; margin: 48px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; counter-reset: step; }
+    .steps li { counter-increment: step; padding: 26px 28px 30px 0; border-top: 2px solid var(--ink); position: relative; }
+    .steps li:nth-child(n+4) { border-top-color: var(--rule); border-top-width: 1px; margin-top: 12px; }
+    .steps li::before { content: counter(step); display: block; font: 700 2.4rem/1 var(--display); color: var(--cite); letter-spacing: -0.03em; margin-bottom: 14px; }
+    .steps h3 { margin-bottom: 8px; }
+    .steps p { color: var(--muted); font-size: 1.02rem; }
+    .aside { margin-top: 36px; color: var(--muted); font-size: 1rem; max-width: 70ch; padding-left: 16px; border-left: 3px solid var(--mark); }
 
-    /* ── CTA ── */
-    .csec { text-align: center; padding: 140px 60px; position: relative; overflow: hidden; }
-    .cglow {
-      position: absolute; inset: 0; pointer-events: none;
-      background: radial-gradient(ellipse 55% 60% at 50% 50%, rgba(200,241,53,.05) 0%, transparent 70%);
-    }
-    .csec h2 { font-size: clamp(40px,4.5vw,80px); margin-bottom: 24px; position: relative; }
-    .csub { font-size: 18px; color: var(--muted); max-width: 400px; margin: 0 auto 44px; line-height: 1.7; position: relative; }
-    .cemail { font-family: var(--fm); font-size: 13px; color: var(--lime); margin-top: 20px; position: relative; }
-    .cemail a { border-bottom: 1px solid var(--lime); padding-bottom: 2px; }
+    /* Benchmark */
+    .bench { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 64px; align-items: start; }
+    .bench h2 { margin-bottom: 22px; }
+    .bench .body + .body { margin-top: 16px; }
+    .ledger { background: var(--sheet); border: 1px solid var(--rule); border-radius: 14px; padding: 8px 24px; }
+    .ledger div { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--rule); }
+    .ledger div:last-child { border-bottom: 0; }
+    .ledger span { color: var(--muted); font-size: 1rem; }
+    .ledger strong { font: 600 1.05rem/1.2 var(--display); text-align: right; font-variant-numeric: tabular-nums; }
+    .status { display: inline-flex; align-items: center; gap: 8px; }
+    .status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #E0A800; box-shadow: 0 0 0 3px rgba(224,168,0,.18); }
 
-    /* ── FOOTER ── */
-    footer {
-      border-top: 1px solid var(--bd); padding: 32px 60px;
-      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
-    }
-    .flinks { display: flex; gap: 28px; list-style: none; }
-    .flinks a { font-family: var(--fm); font-size: 10px; color: var(--muted); letter-spacing: .08em; transition: color .2s; }
-    .flinks a:hover { color: var(--text); }
-    .fcopy { font-family: var(--fm); font-size: 10px; color: var(--dim); letter-spacing: .08em; }
+    /* Pilot */
+    .pilot { list-style: none; margin: 44px 0 0; padding: 0; counter-reset: p; }
+    .pilot li { counter-increment: p; display: grid; grid-template-columns: 4.5rem minmax(0, 16rem) minmax(0, 1fr); gap: 24px; padding: 26px 0; border-top: 1px solid var(--rule); align-items: baseline; }
+    .pilot li:last-child { border-bottom: 1px solid var(--rule); }
+    .pilot li::before { content: counter(p); font: 700 2rem/1 var(--display); color: var(--cite); }
+    .pilot p { color: var(--muted); }
 
-    /* ── DIVIDER ── */
-    .div { border: none; border-top: 1px solid var(--bd); margin: 0 60px; }
+    /* Closing */
+    .close { text-align: left; }
+    .close h2 { font-size: clamp(2.2rem, 5vw, 3.6rem); max-width: 16ch; margin-bottom: 22px; }
+    .close .body { margin-bottom: 32px; }
+    .close .fine a { color: var(--ink); }
 
-    /* ── TECH COMPARISON ── */
-    .tcmp {
-      display: grid; grid-template-columns: 1fr 1px 1fr;
-      gap: 0; margin-bottom: 56px; max-width: 720px;
-    }
-    .tcmp-div { background: var(--bd); }
-    .tcmp-col { padding: 28px 36px; }
-    .tcmp-them { background: var(--s1); border: 1px solid var(--bd); border-right: none; }
-    .tcmp-us { background: var(--s2); border: 1px solid var(--bdh); border-left: none; }
-    .tcmp-head {
-      font-family: var(--fm); font-size: 10px; letter-spacing: .2em;
-      text-transform: uppercase; color: var(--muted); margin-bottom: 18px;
-    }
-    .tcmp-row {
-      display: flex; align-items: center; gap: 10px;
-      font-size: 13px; color: var(--muted); padding: 6px 0;
-      border-bottom: 1px solid var(--bd);
-    }
-    .tcmp-row:last-child { border-bottom: none; }
-    .tcmp-x { color: #e84343; font-size: 11px; flex-shrink: 0; }
-    .tcmp-ok { color: var(--lime); font-size: 11px; flex-shrink: 0; }
-    .tcmp-us .tcmp-row { color: var(--text); }
+    footer { border-top: 1px solid var(--rule); padding: 28px 0 40px; font-family: var(--display); font-size: .9rem; color: var(--muted); }
+    footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 28px; align-items: center; }
+    footer a { color: var(--muted); }
+    footer .grow { margin-right: auto; }
 
-    /* ── TECH GRID ── */
-    .tgrid {
-      display: grid; grid-template-columns: repeat(3,1fr);
-      gap: 1px; background: var(--bd); border: 1px solid var(--bd);
-    }
-    .tcard { background: var(--s1); padding: 28px 26px; transition: background .2s; }
-    .tcard:hover { background: var(--s2); }
-    .tcard-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-    .ttag {
-      font-family: var(--fm); font-size: 9px; letter-spacing: .18em;
-      text-transform: uppercase; padding: 4px 10px; border-radius: 2px;
-    }
-    .tnum { font-family: var(--fm); font-size: 9px; color: var(--dim); letter-spacing: .1em; }
-    .ttname { font-family: var(--fd); font-size: 19px; font-weight: 700; line-height: 1.2; margin-bottom: 10px; }
-    .ttdesc { font-size: 13px; color: var(--muted); line-height: 1.7; }
-    .ttdesc em { font-style: italic; color: var(--text); }
-
-    /* ── FADE UP ── */
-    .fu { opacity: 0; transform: translateY(22px); transition: opacity .65s ease, transform .65s ease; }
-    .fu.in { opacity: 1; transform: translateY(0); }
-
-    /* ── RESPONSIVE ── */
+    /* ── Responsive ── */
     @media (max-width: 960px) {
-      nav, nav.sc { padding: 14px 24px; }
-      .nlinks li:not(:last-child) { display: none; }
-      .hero { grid-template-columns: 1fr; padding: 100px 24px 60px; gap: 48px; }
-      .sec { padding: 72px 24px; }
-      .div { margin: 0 24px; }
-      .pgrid { grid-template-columns: 1fr; }
-      .fgrid { grid-template-columns: 1fr 1fr; }
-      .bgrid { grid-template-columns: 1fr; }
-      .sgrid { grid-template-columns: 1fr; }
-      .step { border-right: none; border-top: 1px solid var(--bd); padding: 32px 0 !important; }
-      .step:first-child { border-top: none; }
-      .minner { grid-template-columns: 1fr 1fr; }
-      .mcell { border-right: none; border-bottom: 1px solid var(--bd); }
-      .ogrid { grid-template-columns: 1fr; gap: 40px; }
-      .csec { padding: 80px 24px; }
-      footer { padding: 28px 24px; flex-direction: column; align-items: flex-start; }
-      .tgrid { grid-template-columns: 1fr 1fr; }
-      .tcmp { grid-template-columns: 1fr; max-width: 100%; }
-      .tcmp-div { display: none; }
-      .tcmp-them { border-right: 1px solid var(--bd); border-bottom: none; }
-      .tcmp-us { border-top: none; }
+      .hero { grid-template-columns: 1fr; gap: 52px; padding-top: 48px; padding-bottom: 72px; }
+      .split, .bench { grid-template-columns: 1fr; gap: 36px; }
+      .sticky { position: static; }
+      .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .steps li:nth-child(n+3) { border-top-color: var(--rule); border-top-width: 1px; margin-top: 12px; }
     }
-    @media (max-width: 580px) {
-      .fgrid { grid-template-columns: 1fr; }
-      .hbtns { flex-direction: column; align-items: flex-start; }
-      .minner { grid-template-columns: 1fr; }
-      .tgrid { grid-template-columns: 1fr; }
+    @media (max-width: 720px) {
+      :root { --gutter: 16px; }
+      body { font-size: 1.06rem; }
+      .nav ul { display: none; }
+      section { padding: 68px 0; }
+      .page { margin: -10px 6px 0 14px; padding: 26px 16px 18px; }
+      .specimen figcaption { margin-left: 14px; margin-right: 6px; }
+      .page table { font-size: .82rem; }
+      .page th:nth-child(4), .page td:nth-child(4) { display: none; }
+      .offer div { grid-template-columns: 1fr; gap: 6px; }
+      .steps { grid-template-columns: 1fr; }
+      .steps li, .steps li:nth-child(n+2) { border-top: 1px solid var(--rule); margin-top: 0; padding-right: 0; }
+      .steps li:first-child { border-top: 2px solid var(--ink); }
+      .pilot li { grid-template-columns: 2.5rem minmax(0, 1fr); gap: 6px 16px; }
+      .pilot li p { grid-column: 2; }
     }
-
-    /* ── DEMO MODAL ── */
-    body.dm-lock { overflow: hidden; }
-    .demo-ov {
-      position: fixed; inset: 0; z-index: 2000;
-      background: rgba(7,8,9,.94);
-      backdrop-filter: blur(14px) saturate(.6);
-      display: flex; align-items: center; justify-content: center;
-      padding: 20px;
-      opacity: 0; pointer-events: none;
-      transition: opacity .5s ease;
-    }
-    .demo-ov.open { opacity: 1; pointer-events: all; }
-    .demo-modal {
-      background: var(--s1); border: 1px solid var(--bdh);
-      width: 100%; max-width: 600px; max-height: 88vh;
-      overflow-y: auto; border-radius: 6px;
-      transform: translateY(90px);
-      transition: transform 1s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-    .demo-ov.open .demo-modal { transform: translateY(0); }
-    .dm-hd {
-      background: var(--s2); border-bottom: 1px solid var(--bd);
-      padding: 12px 20px;
-      display: flex; align-items: center; justify-content: space-between;
-      position: sticky; top: 0; z-index: 1;
-    }
-    .dm-hd-l { display: flex; align-items: center; gap: 9px; }
-    .dm-hdot { width: 6px; height: 6px; border-radius: 50%; background: var(--lime); animation: lp 2s ease-in-out infinite; flex-shrink: 0; }
-    .dm-htitle { font-family: var(--fm); font-size: 10px; color: var(--muted); letter-spacing: .15em; }
-    .dm-close { background: none; border: none; color: var(--muted); font-size: 16px; cursor: none; padding: 0 4px; line-height: 1; transition: color .2s; }
-    .dm-close:hover { color: var(--text); }
-    .dm-s1 { padding: 26px 22px; }
-    .dm-s1-ttl { font-family: var(--fd); font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 6px; line-height: 1.2; }
-    .dm-s1-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; line-height: 1.6; }
-    .dm-inp-row { display: flex; background: var(--s2); border: 1px solid var(--bdh); margin-bottom: 16px; overflow: hidden; }
-    .dm-inp { flex: 1; background: none; border: none; outline: none; padding: 12px 14px; font-family: var(--fm); font-size: 12px; color: var(--text); caret-color: var(--lime); }
-    .dm-inp::placeholder { color: var(--muted); }
-    .dm-go { background: none; border: none; border-left: 1px solid var(--bd); padding: 12px 18px; color: var(--lime); font-family: var(--fm); font-size: 14px; cursor: none; transition: background .2s; }
-    .dm-go:hover { background: rgba(200,241,53,.08); }
-    .dm-or { display: flex; align-items: center; gap: 10px; font-family: var(--fm); font-size: 9px; letter-spacing: .2em; color: var(--muted); margin-bottom: 12px; }
-    .dm-or::before,.dm-or::after { content: ''; flex: 1; height: 1px; background: var(--bd); }
-    .dm-chips { display: flex; flex-direction: column; gap: 8px; }
-    .dm-chip { background: var(--s2); border: 1px solid var(--bd); padding: 11px 14px; text-align: left; font-family: var(--fm); font-size: 11px; color: var(--muted); cursor: none; transition: all .2s; letter-spacing: .04em; line-height: 1.5; }
-    .dm-chip:hover { border-color: var(--bdh); color: var(--text); background: var(--dim); }
-    .dm-qdisp { padding: 12px 22px; border-bottom: 1px solid var(--bd); }
-    .dm-qlbl { font-family: var(--fm); font-size: 9px; letter-spacing: .2em; color: var(--muted); display: block; margin-bottom: 4px; }
-    .dm-qtxtv { font-family: var(--fm); font-size: 12px; color: var(--text); line-height: 1.55; }
-    .dm-stages { padding: 6px 0; }
-    .dm-strow { display: flex; align-items: flex-start; gap: 12px; padding: 9px 22px; opacity: .22; transition: opacity .2s, background .2s; }
-    .dm-strow.active { opacity: 1; background: rgba(200,241,53,.04); border-left: 2px solid var(--lime); padding-left: 20px; }
-    .dm-strow.done { opacity: 1; }
-    .dm-stico {
-      width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      border: 1px solid var(--bd); margin-top: 2px;
-      font-family: var(--fm); font-size: 10px; color: var(--lime);
-      transition: all .25s; position: relative;
-    }
-    .dm-strow.active .dm-stico { border-color: var(--lime); }
-    .dm-strow.active .dm-stico::after { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--lime); animation: lp 1s ease-in-out infinite; }
-    .dm-strow.done .dm-stico { border: none; background: rgba(200,241,53,.12); }
-    .dm-stinfo { flex: 1; min-width: 0; }
-    .dm-sttype { font-family: var(--fm); font-size: 9px; letter-spacing: .14em; color: var(--muted); margin-bottom: 2px; }
-    .dm-stname { font-family: var(--fm); font-size: 12px; color: var(--text); }
-    .dm-stbar { height: 3px; background: var(--bd); border-radius: 1px; margin-top: 5px; overflow: hidden; display: none; }
-    .dm-strow.active .dm-stbar { display: block; }
-    .dm-stfill { height: 100%; background: var(--lime); width: 0%; transition: width .65s ease; }
-    .dm-stout { font-family: var(--fm); font-size: 10px; color: var(--muted); white-space: nowrap; margin-top: 3px; flex-shrink: 0; }
-    .dm-strow.active .dm-stout { color: var(--lime); }
-    .dm-ans { display: none; border-top: 1px solid var(--bd); background: var(--bg); padding: 16px 22px; }
-    .dm-ansmeta { display: flex; align-items: center; gap: 8px; font-family: var(--fm); font-size: 9px; letter-spacing: .18em; color: var(--muted); margin-bottom: 10px; }
-    .dm-ansdot { width: 5px; height: 5px; border-radius: 50%; background: var(--lime); flex-shrink: 0; }
-    .dm-anshl { color: var(--lime); }
-    .dm-anstxt { font-family: var(--fm); font-size: 12px; color: #90b0cc; line-height: 1.85; margin-bottom: 12px; }
-    .dm-cite { border-left: 2px solid var(--lime); padding: 8px 12px; margin-bottom: 16px; }
-    .dm-citelbl { font-family: var(--fm); font-size: 9px; letter-spacing: .18em; color: var(--lime); margin-bottom: 3px; }
-    .dm-citesrc { font-family: var(--fm); font-size: 10px; color: var(--muted); }
-    .dm-cta { padding-top: 14px; border-top: 1px solid var(--bd); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-    .dm-cta-h { font-family: var(--fd); font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
-    .dm-cta-s { font-family: var(--fm); font-size: 10px; color: var(--muted); }
-    .dm-cta-btns { display: flex; align-items: center; gap: 12px; }
-    .dm-try { font-family: var(--fm); font-size: 10px; color: var(--muted); cursor: none; background: none; border: none; text-decoration: underline; text-underline-offset: 3px; padding: 0; transition: color .2s; }
-    .dm-try:hover { color: var(--text); }
-    .dm-book { font-family: var(--fm); font-size: 10px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; background: var(--lime); color: var(--bg); padding: 11px 22px; display: inline-block; transition: background .2s; }
-    .dm-book:hover { background: #d8ff55; }
-    @media (max-width: 640px) {
-      .dm-s1 { padding: 20px 16px; }
-      .dm-qdisp, .dm-stages, .dm-ans { padding-left: 16px; padding-right: 16px; }
-      .dm-strow { padding-left: 16px; padding-right: 16px; }
-      .dm-strow.active { padding-left: 14px; }
-      .dm-cta { flex-direction: column; align-items: flex-start; }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .page tr.cited td { animation: none; }
     }
   </style>
 </head>
 <body>
-  <canvas id="bgc"></canvas>
-  <div id="cur"></div>
+  <a class="skip" href="#main">Skip to content</a>
 
-  <nav id="nav">
-    <a href="#" class="nlogo">
-      <img src="assets/logo.svg" alt="Cortex RAG" class="limg">
-      <span class="lname">Cortex</span>
-      <span class="ltag">/RAG</span>
-    </a>
-    <ul class="nlinks">
-      <li><a href="#features">Features</a></li>
-      <li><a href="#who">Use Cases</a></li>
-      <li><a href="#how">How it works</a></li>
-      <li><a href="https://github.com/SaiAkhil066/CORTEX-AI-SUPER-RAG" target="_blank" rel="noopener">GitHub ↗</a></li>
-    </ul>
-    <a href="#" onclick="openDemo(); return false;" class="ncta">BOOK A DEMO →</a>
-  </nav>
+  <header class="top" id="top">
+    <nav class="wrap nav" aria-label="Main">
+      <a class="brand" href="#main"><img src="assets/logo.svg" alt="" width="34" height="34">Cortex RAG</a>
+      <ul>
+        <li><a href="#build">What we build</a></li>
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#benchmark">Benchmark</a></li>
+        <li><a href="https://github.com/SaiAkhil066/CORTEX-AI-SUPER-RAG" rel="noopener">GitHub</a></li>
+      </ul>
+      <a class="btn btn-solid" href="https://calendly.com/saiakhil066" rel="noopener">Book a call</a>
+    </nav>
+  </header>
 
-  <main>
-    <!-- HERO -->
-    <div class="hero">
+  <main id="main">
+    <div class="wrap hero">
       <div>
-        <div class="live">
-          <span class="ldot"></span>
-          Live &middot; <span id="lc">1,247</span> answers cited in the last hour
+        <h1>Answers you can check.</h1>
+        <p class="lede">We build private AI assistants over your company's documents. Every answer points to the page it came from, and it all runs on infrastructure you control.</p>
+        <div class="actions">
+          <a class="btn btn-solid" href="https://calendly.com/saiakhil066" rel="noopener">Book a 30-minute call</a>
+          <a class="btn btn-line" href="https://github.com/SaiAkhil066/CORTEX-AI-SUPER-RAG" rel="noopener">Read the code</a>
         </div>
-        <h1>
-          Answers your<br>
-          <span class="strike">CTO</span> <em>auditors</em><br>
-          will trust.
-        </h1>
-        <p class="hsub">Cortex turns scattered enterprise data into <strong>cited, permission-aware answers</strong>. No hallucinations. No black boxes. Just receipts.</p>
-        <div class="hbtns">
-          <a href="#" onclick="openDemo(); return false;" class="btn blime">REQUEST A PILOT →</a>
-          <a href="https://github.com/SaiAkhil066/CORTEX-AI-SUPER-RAG" target="_blank" rel="noopener" class="btn bghost">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-            VIEW SOURCE
-          </a>
-        </div>
-        <div class="hstats">
-          <div><span class="hsn">97<sup>%</sup></span><span class="hsl">Retrieval Accuracy</span></div>
-          <div><span class="hsn">14<sup>d</sup></span><span class="hsl">To Deployment</span></div>
-          <div><span class="hsn">0</span><span class="hsl">Vendor Lock-In</span></div>
-        </div>
+        <p class="fine">The retrieval engine is open source under the MIT license, and uses local models by default.</p>
       </div>
-      <div>
-        <div class="term">
-          <div class="thd">
-            <div class="tdots">
-              <div class="tdot" style="background:#ff5f57"></div>
-              <div class="tdot" style="background:#febc2e"></div>
-              <div class="tdot" style="background:#28c840"></div>
-            </div>
-            <div class="ttitle">CORTEX · LIVE RETRIEVAL</div>
-          </div>
-          <div class="tbody">
-            <div><span class="tprompt">›</span> <span id="tq"></span><span class="cblink" id="tc"></span></div>
-            <div id="tr" style="display:none">
-              <div class="tstat">
-                <span class="tsdot"></span>
-                RETRIEVED · <span>94MS</span> · 3 SOURCES · <span>96% CONFIDENCE</span>
-              </div>
-              <div class="tans" id="ta"></div>
-              <div class="tcite" id="tci" style="display:none">
-                <div class="tclbl">Sources</div>
-                <div class="tcsrc" id="ts"></div>
-              </div>
-            </div>
-          </div>
+
+      <figure class="specimen" aria-label="Example of a cited answer">
+        <div class="qa">
+          <p class="q"><small>Question</small>What was 3M's capital expenditure in fiscal 2018?</p>
+          <p class="a">3M spent <strong>$1,577 million</strong> on capital expenditure in 2018, reported in its cash flow statement as purchases of property, plant and equipment.<button class="ref" type="button" aria-controls="source-page" aria-expanded="false" aria-label="Source 1: 3M 2018 annual report, page 60">1</button></p>
         </div>
-        <img src="assets/banner.svg" alt="CORTEX RAG — Agentic Retrieval Engine 2026" style="width:100%;height:auto;display:block;border-radius:8px;opacity:.85">
-      </div>
+        <div class="page" id="source-page">
+          <div class="page-head"><strong>3M_2018_10K.pdf</strong><span>Page 60</span></div>
+          <table>
+            <caption>Consolidated statement of cash flows (millions)</caption>
+            <thead><tr><th scope="col"><span class="sr" style="position:absolute;left:-999px">Line item</span></th><th scope="col">2018</th><th scope="col">2017</th><th scope="col">2016</th></tr></thead>
+            <tbody>
+              <tr class="dim"><td>Net cash provided by operating activities</td><td>6,439</td><td>6,240</td><td>6,662</td></tr>
+              <tr class="cited"><td>Purchases of property, plant and equipment (PP&amp;E)</td><td>(1,577)</td><td>(1,373)</td><td>(1,420)</td></tr>
+              <tr><td>Proceeds from sale of PP&amp;E and other assets</td><td>262</td><td>49</td><td>58</td></tr>
+              <tr><td>Acquisitions, net of cash acquired</td><td>13</td><td>(2,023)</td><td>(16)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <figcaption>How answers are presented. The question comes from <a href="https://arxiv.org/abs/2311.11944" rel="noopener">FinanceBench</a>, and the highlighted row is the evidence on the real filing page.</figcaption>
+      </figure>
     </div>
 
-    <!-- PROBLEM -->
-    <section class="sec" id="problem" style="border-top:1px solid var(--bd)">
-      <div class="slbl fu"><span>—</span><span class="snum">01</span><span>THE MESS</span></div>
-      <h2 class="fu">Your knowledge is everywhere.<br>Your answers are <em>nowhere.</em></h2>
-      <p class="ssub fu">Every team has the truth buried in its data. Most can't find it fast enough — or trust it when they do.</p>
-      <div class="pgrid">
-        <div class="pcard fu">
-          <div class="pnum">P.01</div>
-          <h3 class="ptitle">Knowledge lives <em>everywhere.</em></h3>
-          <p class="pdesc">SOPs in Drive. Policies in Confluence. Tribal knowledge in Slack DMs. No single source of truth — and no way to search across all of it.</p>
+    <section id="build" aria-labelledby="build-title">
+      <div class="wrap split">
+        <div class="sticky">
+          <h2 id="build-title">A research assistant for your own documents</h2>
+          <p class="body">You bring the contracts, policies, filings, manuals or support docs your team keeps searching through. We set up an assistant they can question in plain language, tuned and tested on your material.</p>
         </div>
-        <div class="pcard fu">
-          <div class="pnum">P.02</div>
-          <h3 class="ptitle">Generic AI <em>hallucinates.</em></h3>
-          <p class="pdesc">Off-the-shelf LLMs invent things. Without grounding in your actual documents, every answer becomes a liability — especially when regulators are watching.</p>
-        </div>
-        <div class="pcard fu">
-          <div class="pnum">P.03</div>
-          <h3 class="ptitle">No <em>traceability.</em></h3>
-          <p class="pdesc">When an employee acts on wrong information, you can't trace where it came from. Compliance teams have zero visibility into AI-generated answers.</p>
-        </div>
-        <div class="pcard fu">
-          <div class="pnum">P.04</div>
-          <h3 class="ptitle">Enterprise AI takes <em>months.</em> By then, the question changed.</h3>
-          <p class="pdesc">Procurement. Integration. Fine-tuning. Endless RFPs. Cortex ships in 14 days because it has to.</p>
-        </div>
+        <dl class="offer">
+          <div><dt>Cited answers</dt><dd>Every answer names the file and page it used, so anyone can verify it in a click.</dd></div>
+          <div><dt>Runs where your data lives</dt><dd>Your servers or private cloud, with open models by default. Nothing leaves your network unless you choose a hosted model.</dd></div>
+          <div><dt>Connected to your sources</dt><dd>File shares, SharePoint, Confluence, databases. We build the connectors your documents need.<br><span class="tag">Built per engagement</span></dd></div>
+          <div><dt>Access that matches your org</dt><dd>People only get answers from documents they are allowed to open, wired to the sign-in you already use.<br><span class="tag">Built per engagement</span></dd></div>
+          <div><dt>Tested before launch</dt><dd>You get an evaluation report on questions written by your own team, including the ones it gets wrong.</dd></div>
+        </dl>
       </div>
     </section>
 
-    <!-- FEATURES -->
-    <section class="sec" id="features" style="border-top:1px solid var(--bd);padding-bottom:0">
-      <div class="slbl fu"><span>—</span><span class="snum">02</span><span>WHAT IT DOES</span></div>
-      <h2 class="fu">Built for teams who can't<br>afford to <em>guess.</em></h2>
-      <p class="ssub fu">Every feature exists to reduce risk and increase trust. Not impress at a demo.</p>
-    </section>
-    <div style="max-width:1360px;margin:0 auto;padding:0 60px 100px">
-      <div class="fgrid">
-        <div class="fcard fu">
-          <div class="fiw" style="background:rgba(45,212,191,.12);color:#2dd4bf">◉</div>
-          <h3 class="ftitle">Multi-source connectors</h3>
-          <p class="fdesc">Documents, databases, SharePoint, Notion, Confluence, internal APIs. Your data stays put — we reach in.</p>
-        </div>
-        <div class="fcard fu">
-          <div class="fiw" style="background:rgba(232,67,67,.12);color:#e84343">❝</div>
-          <h3 class="ftitle">Every answer cited</h3>
-          <p class="fdesc">Document, page, section. Teams know exactly where the answer came from. No more "trust me, bro."</p>
-        </div>
-        <div class="fcard fu">
-          <div class="fiw" style="background:rgba(45,212,191,.12);color:#2dd4bf">◎</div>
-          <h3 class="ftitle">Permission-aware</h3>
-          <p class="fdesc">Retrieval respects document-level ACLs. Users only see answers from content they're authorized to access.</p>
-        </div>
-        <div class="fcard fu">
-          <div class="fiw" style="background:rgba(232,67,67,.12);color:#e84343">≡</div>
-          <h3 class="ftitle">Full audit trails</h3>
-          <p class="fdesc">Every query, retrieval, and response logged. Compliance gets receipts. Auditors get answers.</p>
-        </div>
-        <div class="fcard fu">
-          <div class="fiw" style="background:rgba(200,241,53,.1);color:#c8f135">◈</div>
-          <h3 class="ftitle">Built-in evaluation</h3>
-          <p class="fdesc">Measure accuracy, hallucination rates, latency — out of the box. Know how your assistant is actually performing.</p>
-        </div>
-        <div class="fcard fu">
-          <div class="fiw" style="background:rgba(232,67,67,.12);color:#e84343">⊛</div>
-          <h3 class="ftitle">Ships in days</h3>
-          <p class="fdesc">Open-source core. No lock-in. Custom enterprise deployment at a fraction of the closed-source price.</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- TECH STACK -->
-    <section class="sec" id="tech" style="border-top:1px solid var(--bd);padding-bottom:0">
-      <div class="slbl fu"><span>—</span><span>WHY WE'RE DIFFERENT</span></div>
-      <h2 class="fu">Most RAG stops at step 1.<br>We stack <em>nine layers.</em></h2>
-      <p class="ssub fu">Generic RAG = embed + retrieve + generate. One bad chunk, one wrong answer. Cortex chains nine precision techniques so every layer catches what the last one missed.</p>
-      <div class="tcmp fu">
-        <div class="tcmp-col tcmp-them">
-          <div class="tcmp-head">Generic RAG</div>
-          <div class="tcmp-row"><span class="tcmp-x">✗</span> Single-query retrieval</div>
-          <div class="tcmp-row"><span class="tcmp-x">✗</span> Context-free chunks</div>
-          <div class="tcmp-row"><span class="tcmp-x">✗</span> No chunk grading</div>
-          <div class="tcmp-row"><span class="tcmp-x">✗</span> Vector search only</div>
-          <div class="tcmp-row"><span class="tcmp-x">✗</span> Repeat queries re-retrieve</div>
-          <div class="tcmp-row"><span class="tcmp-x">✗</span> Stateless — no memory</div>
-        </div>
-        <div class="tcmp-div"></div>
-        <div class="tcmp-col tcmp-us">
-          <div class="tcmp-head" style="color:var(--lime)">Cortex RAG</div>
-          <div class="tcmp-row"><span class="tcmp-ok">✓</span> 9-layer retrieval pipeline</div>
-          <div class="tcmp-row"><span class="tcmp-ok">✓</span> Context-enriched chunks</div>
-          <div class="tcmp-row"><span class="tcmp-ok">✓</span> LLM grades every chunk</div>
-          <div class="tcmp-row"><span class="tcmp-ok">✓</span> Vector + Graph + Reranker</div>
-          <div class="tcmp-row"><span class="tcmp-ok">✓</span> Semantic cache (0ms)</div>
-          <div class="tcmp-row"><span class="tcmp-ok">✓</span> Multi-turn chat memory</div>
-        </div>
-      </div>
-    </section>
-    <div style="max-width:1360px;margin:0 auto;padding:0 60px 100px">
-      <div class="tgrid">
-
-        <div class="tcard fu">
-          <div class="tcard-top">
-            <span class="ttag" style="background:rgba(45,212,191,.1);color:#2dd4bf">RETRIEVAL</span>
-            <span class="tnum">T.01</span>
-          </div>
-          <h3 class="ttname">Contextual Retrieval</h3>
-          <p class="ttdesc">Chunks carry document context before indexing — so the model knows <em>where</em> a passage sits, not just what it says. Cold chunks cause cold answers.</p>
-        </div>
-
-        <div class="tcard fu">
-          <div class="tcard-top">
-            <span class="ttag" style="background:rgba(45,212,191,.1);color:#2dd4bf">RETRIEVAL</span>
-            <span class="tnum">T.02</span>
-          </div>
-          <h3 class="ttname">RAG-Fusion + RRF</h3>
-          <p class="ttdesc">Multi-query rewriting generates parallel question variants. Reciprocal Rank Fusion merges results by relevance — catching documents a single query would miss.</p>
-        </div>
-
-        <div class="tcard fu">
-          <div class="tcard-top">
-            <span class="ttag" style="background:rgba(140,180,255,.1);color:#8cb4ff">KNOWLEDGE</span>
-            <span class="tnum">T.03</span>
-          </div>
-          <h3 class="ttname">GraphRAG</h3>
-          <p class="ttdesc">Entity relationships are modelled as a knowledge graph. Connected facts that vector search misses — cross-document reasoning, entity disambiguation — surface naturally.</p>
-        </div>
-
-        <div class="tcard fu">
-          <div class="tcard-top">
-            <span class="ttag" style="background:rgba(232,67,67,.1);color:#e84343">QUALITY</span>
-            <span class="tnum">T.04</span>
-          </div>
-          <h3 class="ttname">Corrective RAG (CRAG)</h3>
-          <p class="ttdesc">An LLM grades every retrieved chunk for relevance before generation. Low-confidence chunks are dropped or web-supplemented. Hallucinations die here.</p>
-        </div>
-
-        <div class="tcard fu">
-          <div class="tcard-top">
-            <span class="ttag" style="background:rgba(232,67,67,.1);color:#e84343">QUALITY</span>
-            <span class="tnum">T.05</span>
-          </div>
-          <h3 class="ttname">Neural Reranking</h3>
-          <p class="ttdesc">A CrossEncoder scores every (query, passage) pair on true semantic relevance — not just embedding similarity. The best chunks rise. The noise sinks.</p>
-        </div>
-
-        <div class="tcard fu">
-          <div class="tcard-top">
-            <span class="ttag" style="background:rgba(45,212,191,.1);color:#2dd4bf">RETRIEVAL</span>
-            <span class="tnum">T.06</span>
-          </div>
-          <h3 class="ttname">HyDE</h3>
-          <p class="ttdesc">Hypothetical Document Embeddings generate an ideal answer first, then retrieve against it. Sparse or vague queries find rich results they'd otherwise miss completely.</p>
-        </div>
-
-        <div class="tcard fu">
-          <div class="tcard-top">
-            <span class="ttag" style="background:rgba(200,241,53,.1);color:#c8f135">SPEED</span>
-            <span class="tnum">T.07</span>
-          </div>
-          <h3 class="ttname">Semantic Cache</h3>
-          <p class="ttdesc">Semantically similar questions skip retrieval entirely. First answer: &lt;200ms. Repeat questions: 0ms. Users feel the difference. Bills feel it too.</p>
-        </div>
-
-        <div class="tcard fu">
-          <div class="tcard-top">
-            <span class="ttag" style="background:rgba(140,180,255,.1);color:#8cb4ff">TRANSPARENCY</span>
-            <span class="tnum">T.08</span>
-          </div>
-          <h3 class="ttname">Live Reasoning</h3>
-          <p class="ttdesc">Watch the model think through documents in real time. Every retrieval step, every chunk scored, every decision — visible. No black box. Full audit trail.</p>
-        </div>
-
-        <div class="tcard fu">
-          <div class="tcard-top">
-            <span class="ttag" style="background:rgba(200,241,53,.1);color:#c8f135">MEMORY</span>
-            <span class="tnum">T.09</span>
-          </div>
-          <h3 class="ttname">Chat Memory</h3>
-          <p class="ttdesc">Multi-turn conversations work naturally. Context carries across questions — follow-ups, clarifications, and thread continuations all reference earlier exchanges.</p>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- METRICS -->
-    <div class="mband" id="metrics">
-      <div class="minner">
-        <div class="mcell fu">
-          <span class="mval" data-count="97" data-suffix="%">0%</span>
-          <span class="mlbl">Retrieval Accuracy</span>
-        </div>
-        <div class="mcell fu">
-          <span class="mval">&lt;200<sup>ms</sup></span>
-          <span class="mlbl">Avg. Response</span>
-        </div>
-        <div class="mcell fu">
-          <span class="mval">0</span>
-          <span class="mlbl">Vendor Lock-In</span>
-        </div>
-        <div class="mcell fu">
-          <span class="mval" data-count="14" data-suffix="d">0d</span>
-          <span class="mlbl">To Deploy</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- USE CASES -->
-    <section class="sec" id="who">
-      <div class="slbl fu"><span>—</span><span class="snum">03</span><span>WHO IT'S FOR</span></div>
-      <h2 class="fu">Teams drowning in docs.<br><em>Starving for answers.</em></h2>
-      <div class="bgrid" style="margin-top:0">
-        <div class="bcard fu">
-          <div class="btags"><span class="btag">SaaS</span><span class="btag">Support</span></div>
-          <h3 class="btitle">Customer success teams burning hours on <em>FAQ archaeology.</em></h3>
-          <p class="bdesc">Your agents answer the same questions from scattered docs. Cortex gives them cited answers in 2 seconds — cutting escalations and handle time.</p>
-          <div class="bquote">Our agents spent 40% of their day searching. Now they spend it solving.</div>
-        </div>
-        <div class="bcard fu">
-          <div class="btags"><span class="btag">Ops</span><span class="btag">Compliance</span></div>
-          <h3 class="btitle">Process teams who need to prove which <em>SOP was followed.</em></h3>
-          <p class="bdesc">Procedures scattered across systems. Audits demand traceability. Cortex surfaces the right policy with a citation, every time.</p>
-          <div class="bquote">We can't prove which doc an employee followed during an audit.</div>
-        </div>
-        <div class="bcard fu">
-          <div class="btags"><span class="btag">Finance</span><span class="btag">Legal</span><span class="btag">Health</span></div>
-          <h3 class="btitle">Regulated orgs who need AI without the <em>legal-team migraine.</em></h3>
-          <p class="bdesc">Every answer needs a traceable source. Cortex gives you AI-powered search with the audit trail compliance demands — without the enterprise price tag.</p>
-          <div class="bquote">We can't use AI tools that don't show their sources.</div>
-        </div>
-        <div class="bcard fu">
-          <div class="btags"><span class="btag">Agencies</span><span class="btag">Consultants</span></div>
-          <h3 class="btitle">Firms building client AI products without <em>reinventing RAG.</em></h3>
-          <p class="bdesc">Deliver knowledge assistants per client without rebuilding from scratch. Cortex is your open-source foundation, deployable in a week.</p>
-          <div class="bquote">Each client engagement used to take 3 months. Now it's 10 days.</div>
-        </div>
+    <section id="how" aria-labelledby="how-title">
+      <div class="wrap">
+        <h2 id="how-title">What happens to a question</h2>
+        <p class="body" style="margin-top:18px">A single vector search misses exact figures, names and follow-ups. Cortex runs each question through a sequence of checks before anything is written.</p>
+        <ol class="steps">
+          <li><h3>Understand the question</h3><p>Follow-ups like "and the year before?" are rewritten into a complete question first.</p></li>
+          <li><h3>Search two ways</h3><p>Keyword search finds exact terms and figures. Semantic search finds passages that mean the same thing in other words.</p></li>
+          <li><h3>Follow related names</h3><p>An entity graph pulls in passages about the same companies, people and products.</p></li>
+          <li><h3>Rerank</h3><p>A cross-encoder reads every candidate against the question and keeps the strongest.</p></li>
+          <li><h3>Check relevance</h3><p>The model grades each passage and drops the ones that don't answer the question.</p></li>
+          <li><h3>Answer with sources</h3><p>The answer cites each passage it used, down to the page.</p></li>
+        </ol>
+        <p class="aside">Contextual retrieval, HyDE and RAG-Fusion are available for harder collections. Every step can be switched on or off, and we measure which ones actually help on your documents before turning them on.</p>
       </div>
     </section>
 
-    <!-- HOW IT WORKS -->
-    <section class="sec" id="how" style="border-top:1px solid var(--bd)">
-      <div class="slbl fu"><span>—</span><span class="snum">04</span><span>HOW IT WORKS</span></div>
-      <h2 class="fu">From data to trusted answers<br>in <em>three steps.</em></h2>
-      <div class="sgrid">
-        <div class="step fu">
-          <span class="sn">01 / CONNECT</span>
-          <h3 class="stitle">Connect your knowledge</h3>
-          <p class="sdesc">We integrate with your existing systems — documents, databases, internal tools. No migration. No restructuring. Your data stays where it is.</p>
-        </div>
-        <div class="step fu">
-          <span class="sn">02 / CONFIGURE</span>
-          <h3 class="stitle">Configure retrieval rules</h3>
-          <p class="sdesc">Set permission boundaries, define access roles, tune retrieval accuracy. We handle configuration with you in week one.</p>
-        </div>
-        <div class="step fu">
-          <span class="sn">03 / DEPLOY</span>
-          <h3 class="stitle">Deploy and measure</h3>
-          <p class="sdesc">Go live with your knowledge assistant. Monitor accuracy, run evaluations, iterate — full observability from day one.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- OSS -->
-    <section class="sec" style="border-top:1px solid var(--bd)">
-      <div class="ogrid fu">
+    <section id="benchmark" aria-labelledby="bench-title">
+      <div class="wrap bench">
         <div>
-          <div class="slbl"><span>—</span><span class="snum">05</span><span>OPEN SOURCE</span></div>
-          <h2>Built in the open.<br><em>Deployed</em> for your enterprise.</h2>
-          <p class="ssub" style="margin-bottom:28px">No black boxes. No hidden logic. Audit every retrieval step. Enterprise deployment, customization, and support at a fraction of closed-source alternatives.</p>
-          <a href="https://github.com/SaiAkhil066/CORTEX-AI-SUPER-RAG" target="_blank" rel="noopener" class="btn bghost" style="display:inline-flex">Explore on GitHub ↗</a>
+          <h2 id="bench-title">Measured, not claimed</h2>
+          <p class="body">We're benchmarking Cortex on FinanceBench: 150 questions written by financial analysts about 84 real annual and quarterly reports. In the original study, GPT-4 Turbo with a standard retrieval setup got 81% of these questions wrong or refused to answer.</p>
+          <p class="body">We'll publish our full results here, including where Cortex falls short, together with the code to reproduce them.</p>
         </div>
-        <div>
-          <div class="ocode">
-            <div><span class="cln">1</span><span class="cc"># cited, permission-aware retrieval</span></div>
-            <div><span class="cln">2</span></div>
-            <div><span class="cln">3</span><span class="ck">from</span> <span class="cv">cortex</span> <span class="ck">import</span> <span class="cf">CortexRAG</span></div>
-            <div><span class="cln">4</span></div>
-            <div><span class="cln">5</span><span class="cv">rag</span> = <span class="cf">CortexRAG</span>(config=<span class="cs">"enterprise.yaml"</span>)</div>
-            <div><span class="cln">6</span><span class="cv">rag</span>.<span class="cf">connect</span>(<span class="cs">"s3://company-docs"</span>)</div>
-            <div><span class="cln">7</span><span class="cv">rag</span>.<span class="cf">connect</span>(<span class="cs">"confluence://wiki"</span>)</div>
-            <div><span class="cln">8</span></div>
-            <div><span class="cln">9</span><span class="cv">result</span> = <span class="cv">rag</span>.<span class="cf">query</span>(</div>
-            <div><span class="cln">10</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="cs">"What is our data retention policy?"</span>,</div>
-            <div><span class="cln">11</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="cv">user_role</span>=<span class="cs">"legal_team"</span></div>
-            <div><span class="cln">12</span>)</div>
-            <div><span class="cln">13</span></div>
-            <div><span class="cln">14</span><span class="cc"># result.answer  → cited, accurate, role-aware</span></div>
-            <div><span class="cln">15</span><span class="cc"># result.sources → ['Privacy Policy §3.2', 'GDPR SOP v4']</span></div>
-          </div>
+        <div class="ledger" aria-label="Benchmark details">
+          <div><span>Questions</span><strong>150</strong></div>
+          <div><span>SEC filings</span><strong>84</strong></div>
+          <div><span>Passages indexed</span><strong>About 61,000</strong></div>
+          <div><span>Model</span><strong>Llama 3.1 8B, local</strong></div>
+          <div><span>Status</span><strong class="status">Running now</strong></div>
         </div>
       </div>
     </section>
 
-    <!-- CTA -->
-    <div class="csec" id="contact">
-      <div class="cglow"></div>
-      <div class="slbl fu" style="justify-content:center;margin-bottom:28px"><span>—</span><span class="snum">06</span><span>GET STARTED</span></div>
-      <h2 class="fu">Ready to build yours?</h2>
-      <p class="csub fu">We build enterprise RAG at low cost for teams ready to make their knowledge actually useful.</p>
-      <a href="mailto:saiakhil066@gmail.com?subject=CORTEX RAG — Enterprise Inquiry" class="btn blime fu" style="position:relative">REQUEST A PILOT →</a>
-      <div class="cemail fu">or email <a href="mailto:saiakhil066@gmail.com">saiakhil066@gmail.com</a></div>
-    </div>
+    <section id="pilot" aria-labelledby="pilot-title">
+      <div class="wrap">
+        <h2 id="pilot-title">How a pilot works</h2>
+        <ol class="pilot">
+          <li><h3>A 30-minute call</h3><p>Tell us what your team keeps searching for. We'll tell you honestly whether retrieval can fix it.</p></li>
+          <li><h3>A pilot on your documents</h3><p>We index a sample, write test questions with you and share the scores, misses included. We aim to finish in about two weeks.</p></li>
+          <li><h3>Deployment</h3><p>We install it on your infrastructure, connect your sources and hand over the evaluation suite so you can keep measuring.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <section id="contact" aria-labelledby="contact-title">
+      <div class="wrap close">
+        <h2 id="contact-title">Read the code before you call us</h2>
+        <p class="body">The engine is open source. Clone it, run it on your laptop against your own files, and see whether the answers hold up. If they do, we can build the version your organisation needs.</p>
+        <div class="actions">
+          <a class="btn btn-solid" href="https://calendly.com/saiakhil066" rel="noopener">Book a 30-minute call</a>
+          <a class="btn btn-line" href="https://github.com/SaiAkhil066/CORTEX-AI-SUPER-RAG" rel="noopener">View on GitHub</a>
+        </div>
+        <p class="fine">Or email <a href="mailto:saiakhil066@gmail.com?subject=Cortex%20RAG%20enquiry">saiakhil066@gmail.com</a>.</p>
+      </div>
+    </section>
   </main>
 
   <footer>
-    <div class="nlogo">
-      <img src="assets/logo.svg" alt="Cortex RAG" class="limg">
-      <span class="lname" style="color:var(--muted)">Cortex</span>
-      <span class="ltag">/RAG · Enterprise Knowledge Intelligence</span>
+    <div class="wrap">
+      <span class="grow">Cortex RAG, built by N Sai Akhil</span>
+      <a href="https://github.com/SaiAkhil066/CORTEX-AI-SUPER-RAG" rel="noopener">GitHub</a>
+      <a href="mailto:saiakhil066@gmail.com">Email</a>
+      <span>MIT licensed</span>
     </div>
-    <ul class="flinks">
-      <li><a href="https://github.com/SaiAkhil066/CORTEX-AI-SUPER-RAG" target="_blank" rel="noopener">GitHub</a></li>
-      <li><a href="mailto:saiakhil066@gmail.com">Contact</a></li>
-    </ul>
-    <div class="fcopy">Open Source · MIT License</div>
   </footer>
 
-  <!-- ── DEMO MODAL ── -->
-  <div id="demo-ov" class="demo-ov" role="dialog" aria-modal="true" aria-label="CORTEX RAG Live Pipeline Demo">
-    <div class="demo-modal">
-
-      <div class="dm-hd">
-        <div class="dm-hd-l">
-          <span class="dm-hdot"></span>
-          <span class="dm-htitle">CORTEX RAG · LIVE PIPELINE DEMO</span>
-        </div>
-        <button class="dm-close" onclick="closeDemo()" aria-label="Close">✕</button>
-      </div>
-
-      <!-- Screen 1: query picker -->
-      <div id="dm-s1" class="dm-s1">
-        <div class="dm-s1-ttl">Ask anything from our knowledge base</div>
-        <p class="dm-s1-sub">Watch all 9 retrieval layers fire in real time.</p>
-        <div class="dm-inp-row">
-          <input id="dm-inp" class="dm-inp" type="text" placeholder="Type your question…" autocomplete="off" spellcheck="false" />
-          <button class="dm-go" onclick="dmSubmit()" aria-label="Run query">→</button>
-        </div>
-        <div class="dm-or">OR CHOOSE A PRESET</div>
-        <div class="dm-chips">
-          <button class="dm-chip" onclick="dmPickPreset(0)">→ Who built CORTEX and why does it exist?</button>
-          <button class="dm-chip" onclick="dmPickPreset(1)">→ What makes CORTEX different from every other RAG tool?</button>
-          <button class="dm-chip" onclick="dmPickPreset(2)">→ What is the vision behind CORTEX RAG?</button>
-        </div>
-      </div>
-
-      <!-- Screen 2: pipeline + answer -->
-      <div id="dm-s2" style="display:none">
-        <div class="dm-qdisp">
-          <span class="dm-qlbl">QUERY</span>
-          <div id="dm-qtxt" class="dm-qtxtv"></div>
-        </div>
-        <div id="dm-stages" class="dm-stages"></div>
-        <div id="dm-ans" class="dm-ans">
-          <div class="dm-ansmeta">
-            <span class="dm-ansdot"></span>
-            RETRIEVED &middot; <span id="dm-ans-ms" class="dm-anshl"></span> &middot; <span id="dm-ans-conf" class="dm-anshl"></span>
-          </div>
-          <div id="dm-ans-txt" class="dm-anstxt"></div>
-          <div class="dm-cite">
-            <div class="dm-citelbl">SOURCES</div>
-            <div id="dm-ans-src" class="dm-citesrc"></div>
-          </div>
-          <div class="dm-cta">
-            <div>
-              <div class="dm-cta-h">See this on your actual data.</div>
-              <div class="dm-cta-s">14-day deployment &middot; no vendor lock-in</div>
-            </div>
-            <div class="dm-cta-btns">
-              <button class="dm-try" onclick="dmTryAnother()">try another</button>
-              <a href="https://calendly.com/saiakhil066" target="_blank" rel="noopener" class="dm-book">BOOK A CALL →</a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
   <script>
-    // ── CURSOR ──
-    const cur = document.getElementById('cur');
-    let cx = innerWidth/2, cy = innerHeight/2, tx = cx, ty = cy;
-    document.addEventListener('mousemove', e => { tx=e.clientX; ty=e.clientY; cur.style.opacity='1'; });
-    document.addEventListener('mouseleave', () => cur.style.opacity='0');
-    (function ani() {
-      cx += (tx-cx)*.12; cy += (ty-cy)*.12;
-      cur.style.left=cx+'px'; cur.style.top=cy+'px';
-      requestAnimationFrame(ani);
-    })();
-    document.querySelectorAll('a,button,.fcard,.pcard,.bcard').forEach(el => {
-      el.addEventListener('mouseenter', () => { cur.style.width='42px'; cur.style.height='42px'; cur.style.borderColor='rgba(200,241,53,.8)'; });
-      el.addEventListener('mouseleave', () => { cur.style.width='26px'; cur.style.height='26px'; cur.style.borderColor='rgba(200,241,53,.5)'; });
-    });
+    // Hairline under the header once the page scrolls
+    const bar = document.getElementById('top');
+    addEventListener('scroll', () => bar.classList.toggle('scrolled', scrollY > 8), { passive: true });
 
-    // ── STAR FIELD ──
-    const cv = document.getElementById('bgc'), cx2 = cv.getContext('2d');
-    const stars = [];
-    function resizeCv() { cv.width=innerWidth; cv.height=innerHeight; }
-    function initStars() {
-      stars.length=0;
-      const n = Math.floor((cv.width*cv.height)/7000);
-      for (let i=0;i<n;i++) stars.push({ x:Math.random()*cv.width, y:Math.random()*cv.height, r:Math.random()*1.3+.2, a:Math.random()*.35+.04 });
-    }
-    function drawStars() {
-      cx2.clearRect(0,0,cv.width,cv.height);
-      stars.forEach(s => { cx2.beginPath(); cx2.arc(s.x,s.y,s.r,0,Math.PI*2); cx2.fillStyle=`rgba(220,230,255,${s.a})`; cx2.fill(); });
-    }
-    resizeCv(); initStars(); drawStars();
-    window.addEventListener('resize', () => { resizeCv(); initStars(); drawStars(); });
-
-    // ── NAV SCROLL ──
-    const nav = document.getElementById('nav');
-    window.addEventListener('scroll', () => nav.classList.toggle('sc', scrollY>50), {passive:true});
-
-    // ── FADE UP ──
-    const io = new IntersectionObserver(entries => {
-      entries.forEach((e,i) => { if(e.isIntersecting) { setTimeout(()=>e.target.classList.add('in'),i*60); io.unobserve(e.target); } });
-    }, {threshold:.1, rootMargin:'0px 0px -40px 0px'});
-    document.querySelectorAll('.fu').forEach(el=>io.observe(el));
-
-    // ── COUNTERS ──
-    function countUp(el) {
-      const end=parseInt(el.dataset.count), suf=el.dataset.suffix||'', dur=1600, t0=performance.now();
-      (function tick(t) { const p=Math.min((t-t0)/dur,1), e=1-Math.pow(1-p,3); el.textContent=Math.round(e*end)+suf; if(p<1)requestAnimationFrame(tick); })(t0);
-    }
-    const mo = new IntersectionObserver(es => { if(es[0].isIntersecting){ document.querySelectorAll('[data-count]').forEach(countUp); mo.disconnect(); } },{threshold:.3});
-    const mb=document.getElementById('metrics'); if(mb) mo.observe(mb);
-
-    // ── LIVE COUNTER ──
-    let lc=1247+Math.floor(Math.random()*30);
-    const lce=document.getElementById('lc');
-    setInterval(()=>{ if(Math.random()>.4){ lc+=Math.floor(Math.random()*3)+1; if(lce)lce.textContent=lc.toLocaleString(); } },3000);
-
-    // ── TERMINAL ──
-    const demos=[
-      {q:'What is our refund policy for enterprise contracts?',a:'Enterprise contracts include a 30-day money-back guarantee, with pro-rated refunds in the first 90 days. Renewal payments are non-refundable unless SLA fell below 99.5%.',src:'§4.2 Enterprise MSA · Support Policy v3.1 · SLA Agreement 2024'},
-      {q:'Which compliance certifications do we hold?',a:'Currently certified for SOC 2 Type II, ISO 27001, and GDPR. HIPAA BAA available on Enterprise tier. Annual renewal due Q3 2025.',src:'Compliance Register 2024 · Legal FAQ · Security Overview v2'},
-      {q:'What is the P1 incident escalation process?',a:'P1 incidents require on-call notification within 5 minutes. Escalate to engineering lead if unresolved after 30 minutes. Executive notification required after 2 hours.',src:'Incident Response SOP v4.2 · On-Call Runbook · Escalation Policy'},
-    ];
-    let di=0;
-    function typeT(el,txt,spd,cb){ let i=0; el.textContent=''; const t=setInterval(()=>{ if(i<txt.length){el.textContent+=txt[i++];}else{clearInterval(t);if(cb)cb();} },spd); }
-    function runDemo(){
-      const d=demos[di%demos.length];
-      const tq=document.getElementById('tq'),tc=document.getElementById('tc'),tr=document.getElementById('tr'),ta=document.getElementById('ta'),tci=document.getElementById('tci'),ts=document.getElementById('ts');
-      tc.style.display='inline-block'; tr.style.display='none'; tci.style.display='none'; ta.textContent=''; ts.textContent='';
-      typeT(tq,d.q,44,()=>{
-        tc.style.display='none';
-        setTimeout(()=>{
-          tr.style.display='block';
-          typeT(ta,d.a,14,()=>{
-            tci.style.display='block';
-            typeT(ts,d.src,20,()=>{ setTimeout(()=>{ di++; runDemo(); },4500); });
-          });
-        },700);
-      });
-    }
-    setTimeout(runDemo,900);
-  </script>
-
-  <script>
-    // ── PIPELINE THEATER ──
-    const DM_QUERIES = [
-      'Who built CORTEX and why does it exist?',
-      'What makes CORTEX different from every other RAG tool?',
-      'What is the vision behind CORTEX RAG?'
-    ];
-    const DM_ANSWERS = [
-      { text: 'CORTEX was built by Sai Akhil — a developer who got tired of watching enterprises drown in their own knowledge. Every answer buried in a Slack thread. Every policy lost in a Drive folder. He believed the truth was always in your data. You just needed a system that could find it, cite it, and prove it. So he built one.', src: 'Founder\'s Notes · Origin Story · Core Principles v1', ms: '91ms', conf: '99% confidence' },
-      { text: 'Most RAG tools retrieve. CORTEX understands. Nine precision layers — contextual retrieval, graph reasoning, LLM grading, neural reranking — stack on each other so every answer comes with a receipt. Not a guess. Not a hallucination. A cited, permission-aware fact your auditors, lawyers, and team can stand behind. That\'s the difference.', src: 'Architecture Overview · 9-Layer Pipeline Doc · Product Philosophy', ms: '104ms', conf: '97% confidence' },
-      { text: 'A world where no team loses hours searching for answers they already have. Where AI doesn\'t hallucinate — it cites. Where knowledge is a competitive advantage, and accessing it takes seconds, not weeks. CORTEX is being built as the infrastructure for that world — open-source, enterprise-ready, and shipping in 14 days.', src: 'Vision Document 2026 · Roadmap v3 · Mission Statement', ms: '88ms', conf: '98% confidence' }
-    ];
-    const DM_STAGES = [
-      { tag:'RETRIEVAL', col:'#2dd4bf', num:'T.01', name:'Contextual Retrieval',      out:'12 chunks indexed'       },
-      { tag:'RETRIEVAL', col:'#2dd4bf', num:'T.02', name:'RAG-Fusion + RRF',          out:'3 sub-queries merged'     },
-      { tag:'KNOWLEDGE', col:'#8cb4ff', num:'T.03', name:'GraphRAG',                  out:'7 entities linked'        },
-      { tag:'RETRIEVAL', col:'#2dd4bf', num:'T.06', name:'HyDE',                      out:'Ideal answer embedded'    },
-      { tag:'QUALITY',   col:'#e84343', num:'T.04', name:'Corrective RAG (CRAG)',      out:'9 kept · 3 dropped'       },
-      { tag:'QUALITY',   col:'#e84343', num:'T.05', name:'Neural Reranking',           out:'Best chunks surfaced'     },
-      { tag:'SPEED',     col:'#c8f135', num:'T.07', name:'Semantic Cache',             out:'Cache miss — fresh run'   },
-      { tag:'TRANSPARENCY',col:'#8cb4ff',num:'T.08',name:'Live Reasoning',            out:'Audit log written'        },
-      { tag:'MEMORY',    col:'#c8f135', num:'T.09', name:'Chat Memory',               out:'Context stored'           }
-    ];
-
-    const dmOv = document.getElementById('demo-ov');
-    const dmModal = dmOv.querySelector('.demo-modal');
-
-    function openDemo() {
-      dmOv.classList.add('open');
-      document.body.classList.add('dm-lock');
-      dmShowS1();
-      setTimeout(() => document.getElementById('dm-inp').focus(), 400);
-    }
-    function closeDemo() {
-      dmOv.classList.remove('open');
-      document.body.classList.remove('dm-lock');
-    }
-    dmOv.addEventListener('click', e => { if (e.target === dmOv) closeDemo(); });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape' && dmOv.classList.contains('open')) closeDemo(); });
-
-    document.getElementById('dm-inp').addEventListener('keydown', e => { if (e.key === 'Enter') dmSubmit(); });
-
-    function dmShowS1() {
-      document.getElementById('dm-s1').style.display = 'block';
-      document.getElementById('dm-s2').style.display = 'none';
-      document.getElementById('dm-inp').value = '';
-      document.getElementById('dm-ans').style.display = 'none';
-      dmModal.scrollTop = 0;
-    }
-
-    function dmMatchPreset(t) {
-      t = t.toLowerCase();
-      if (/who|built|founder|origin|why|sai|akhil|exist|story|create/.test(t)) return 0;
-      if (/differ|unique|pipeline|layer|feature|better|special|how|what make/.test(t)) return 1;
-      if (/vision|future|goal|mission|where|roadmap|headed|going|plan|dream/.test(t)) return 2;
-      return 0;
-    }
-
-    function dmPickPreset(i) { dmRunPipeline(i, DM_QUERIES[i]); }
-    function dmSubmit() {
-      const val = document.getElementById('dm-inp').value.trim();
-      if (!val) return;
-      dmRunPipeline(dmMatchPreset(val), val);
-    }
-
-    function dmRunPipeline(qi, queryText) {
-      document.getElementById('dm-s1').style.display = 'none';
-      document.getElementById('dm-s2').style.display = 'block';
-      document.getElementById('dm-qtxt').textContent = '“' + queryText + '”';
-      document.getElementById('dm-ans').style.display = 'none';
-      dmModal.scrollTop = 0;
-
-      const sl = document.getElementById('dm-stages');
-      sl.innerHTML = '';
-      DM_STAGES.forEach((s, idx) => {
-        const row = document.createElement('div');
-        row.className = 'dm-strow';
-        row.id = 'dmst' + idx;
-        row.innerHTML =
-          '<div class="dm-stico" id="dmico' + idx + '"></div>' +
-          '<div class="dm-stinfo">' +
-            '<div class="dm-sttype">' + s.num + ' · <span style="color:' + s.col + '">' + s.tag + '</span></div>' +
-            '<div class="dm-stname">' + s.name + '</div>' +
-            '<div class="dm-stbar"><div class="dm-stfill" id="dmfill' + idx + '"></div></div>' +
-          '</div>' +
-          '<div class="dm-stout" id="dmout' + idx + '">' + s.out + '</div>';
-        sl.appendChild(row);
-      });
-
-      setTimeout(() => dmAnimStage(0, qi), 180);
-    }
-
-    function dmAnimStage(idx, qi) {
-      if (idx >= DM_STAGES.length) { dmShowAnswer(qi); return; }
-      const row = document.getElementById('dmst' + idx);
-      const fill = document.getElementById('dmfill' + idx);
-      const out = document.getElementById('dmout' + idx);
-      row.classList.add('active');
-      out.textContent = 'running…';
-      setTimeout(() => { fill.style.width = '100%'; }, 40);
-      const dur = 370 + Math.random() * 340;
-      setTimeout(() => {
-        row.classList.remove('active');
-        row.classList.add('done');
-        document.getElementById('dmico' + idx).textContent = '✓';
-        out.textContent = DM_STAGES[idx].out;
-        dmAnimStage(idx + 1, qi);
-      }, dur);
-    }
-
-    function dmShowAnswer(qi) {
-      const a = DM_ANSWERS[qi];
-      document.getElementById('dm-ans-ms').textContent = a.ms;
-      document.getElementById('dm-ans-conf').textContent = a.conf;
-      document.getElementById('dm-ans-src').textContent = a.src;
-      const ans = document.getElementById('dm-ans');
-      ans.style.display = 'block';
-      const el = document.getElementById('dm-ans-txt');
-      el.textContent = '';
-      let i = 0;
-      const iv = setInterval(() => {
-        if (i < a.text.length) el.textContent += a.text[i++];
-        else clearInterval(iv);
-      }, 14);
-      setTimeout(() => { dmModal.scrollTop = dmModal.scrollHeight; }, 120);
-    }
-
-    function dmTryAnother() {
-      dmShowS1();
-      setTimeout(() => document.getElementById('dm-inp').focus(), 80);
-    }
-
-    // extend cursor hover to demo modal interactive elements
-    document.querySelectorAll('.dm-close,.dm-go,.dm-chip,.dm-try,.dm-book').forEach(el => {
-      el.addEventListener('mouseenter', () => { cur.style.width='42px'; cur.style.height='42px'; cur.style.borderColor='rgba(200,241,53,.8)'; });
-      el.addEventListener('mouseleave', () => { cur.style.width='26px'; cur.style.height='26px'; cur.style.borderColor='rgba(200,241,53,.5)'; });
+    // The citation marker points at its source page
+    const ref = document.querySelector('.ref');
+    const page = document.getElementById('source-page');
+    const show = on => { page.classList.toggle('pulse', on); ref.setAttribute('aria-expanded', on); };
+    ref.addEventListener('mouseenter', () => show(true));
+    ref.addEventListener('mouseleave', () => show(false));
+    ref.addEventListener('focus', () => show(true));
+    ref.addEventListener('blur', () => show(false));
+    ref.addEventListener('click', () => {
+      show(true);
+      page.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'nearest' });
     });
   </script>
 </body>
