@@ -105,8 +105,9 @@
       box-shadow: 0 18px 40px -24px rgba(27,35,64,.35);
       transform: rotate(0.6deg);
     }
-    .page-head { display: flex; justify-content: space-between; gap: 12px; font-family: var(--display); font-size: .82rem; color: var(--muted); margin-bottom: 14px; }
-    .page-head strong { color: var(--ink); font-weight: 600; }
+    .page-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; font-family: var(--display); font-size: .82rem; color: var(--muted); margin-bottom: 14px; }
+    .page-head strong { color: var(--ink); font-weight: 600; overflow-wrap: anywhere; }
+    .page-head span { white-space: nowrap; }
     .page table { width: 100%; border-collapse: collapse; font-size: .9rem; line-height: 1.35; font-variant-numeric: tabular-nums; }
     .page caption { text-align: left; font-weight: 500; font-size: .92rem; padding-bottom: 8px; }
     .page th { text-align: right; font-weight: 500; color: var(--muted); padding: 0 0 6px 10px; font-size: .82rem; }
@@ -209,6 +210,87 @@
       html { scroll-behavior: auto; }
       .page tr.cited td { animation: none; }
     }
+
+    /* ── Walkthrough: follow one question through the pipeline ── */
+    .btn-walk {
+      display: inline-flex; align-items: center; gap: 10px; margin-top: -8px; margin-bottom: 22px;
+      font: 600 1rem/1 var(--display); color: var(--cite); background: none; border: 0; padding: 8px 0; cursor: pointer;
+    }
+    .btn-walk .play { width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid currentColor; display: grid; place-items: center; transition: background .15s, color .15s; }
+    .btn-walk:hover .play { background: var(--cite); color: #fff; }
+    .btn-walk:hover span:last-child { text-decoration: underline; text-underline-offset: 4px; }
+    .how-cta { margin-top: 28px; margin-bottom: 0; }
+
+    dialog.walk {
+      width: min(780px, calc(100vw - 32px)); max-height: calc(100vh - 48px); padding: 0;
+      border: 1px solid var(--rule); border-radius: 18px; background: var(--paper); color: var(--ink);
+      box-shadow: 0 30px 80px -30px rgba(27,35,64,.55);
+    }
+    dialog.walk::backdrop { background: rgba(27,35,64,.45); backdrop-filter: blur(3px); }
+    dialog.walk[open] { animation: rise .35s cubic-bezier(.2,.8,.3,1); }
+    @keyframes rise { from { opacity: 0; transform: translateY(18px); } }
+    .walk-inner { padding: 26px 30px 30px; }
+    .walk-head { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 8px; }
+    .walk-head h2 { font-size: 1.6rem; margin-right: auto; }
+    .walk-x { flex: none; width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--rule); background: var(--sheet); color: var(--ink); font-size: 1.3rem; line-height: 1; cursor: pointer; }
+    .walk-x:hover { border-color: var(--ink); }
+    .walk-note { color: var(--muted); font-size: .98rem; margin-bottom: 20px; max-width: 60ch; }
+
+    .picks { display: grid; gap: 8px; margin-bottom: 22px; }
+    .pick {
+      display: flex; align-items: baseline; gap: 12px; width: 100%; text-align: left;
+      font: 500 1rem/1.4 var(--display); color: var(--ink); background: var(--sheet);
+      border: 1px solid var(--rule); border-radius: 12px; padding: 13px 16px; cursor: pointer;
+    }
+    .pick:hover { border-color: var(--ink); }
+    .pick[aria-pressed="true"] { border-color: var(--cite); box-shadow: inset 3px 0 0 var(--cite); }
+    .pick small { flex: none; font: 500 .74rem/1 var(--display); color: var(--cite); border: 1px solid #CFCDF3; border-radius: 999px; padding: 4px 8px 5px; }
+    .pick .ctx { display: block; font-weight: 400; color: var(--muted); font-size: .86rem; margin-top: 2px; }
+
+    .run { list-style: none; margin: 0; padding: 0; counter-reset: stage; }
+    .run li {
+      counter-increment: stage; display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 4px 14px;
+      padding: 12px 0; border-top: 1px solid var(--rule); opacity: .35; transition: opacity .25s;
+    }
+    .run li::before {
+      content: counter(stage); grid-row: span 2; width: 30px; height: 30px; border-radius: 50%;
+      display: grid; place-items: center; font: 700 .9rem/1 var(--display);
+      border: 1.5px solid var(--rule); color: var(--muted); background: var(--sheet);
+    }
+    .run li.on, .run li.done { opacity: 1; }
+    .run li.on::before { border-color: var(--cite); color: var(--cite); box-shadow: 0 0 0 4px #E4E2FA; }
+    .run li.done::before { background: var(--cite); border-color: var(--cite); color: #fff; }
+    .run h3 { font-size: 1rem; }
+    .run p { color: var(--muted); font-size: .98rem; line-height: 1.5; min-height: 1.5em; }
+    .run li.on p::after { content: "working"; color: var(--cite); font: 500 .85rem var(--display); animation: blink 1s steps(2) infinite; }
+    .run li.on p:not(:empty)::after { content: ""; }
+    @keyframes blink { 50% { opacity: .3; } }
+
+    .result { margin-top: 18px; background: var(--sheet); border: 1px solid var(--rule); border-radius: 14px; padding: 20px 22px; }
+    .result[hidden] { display: none; }
+    .result .a { margin-bottom: 16px; }
+    .result .page { margin: 0; transform: none; box-shadow: none; background: var(--paper); border-color: var(--rule); padding: 18px 18px 12px; }
+    .result .page tr.cited td { animation: none; background: none; font-weight: 400; }
+    .result .page tr.cited td:first-child,
+    .result .page tr.cited td.hl { background: var(--mark); }
+    .result .page tr.cited td.hl { font-weight: 600; }
+    .walk-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+    .walk-actions .btn { padding: 11px 18px; font-size: .95rem; }
+
+    body.locked { overflow: hidden; }
+
+    @media (max-width: 720px) {
+      dialog.walk { width: 100vw; max-width: 100vw; height: 100dvh; max-height: 100dvh; border-radius: 0; border: 0; margin: 0; }
+      .walk-inner { padding: 18px 16px 28px; }
+      .walk-head h2 { font-size: 1.35rem; }
+      .result { padding: 16px; }
+      .result .page { padding: 14px 12px 8px; }
+      .result .page table { font-size: .8rem; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      dialog.walk[open] { animation: none; }
+      .run li { transition: none; }
+    }
   </style>
 </head>
 <body>
@@ -236,6 +318,10 @@
           <a class="btn btn-solid" href="https://calendly.com/saiakhil066" rel="noopener">Book a 30-minute call</a>
           <a class="btn btn-line" href="https://github.com/SaiAkhil066/CORTEX-AI-SUPER-RAG" rel="noopener">Read the code</a>
         </div>
+        <button class="btn-walk" type="button" data-walk>
+          <span class="play" aria-hidden="true"><svg width="11" height="12" viewBox="0 0 11 12"><path d="M1 1.2v9.6c0 .6.7 1 1.2.7l7.6-4.8c.5-.3.5-1.1 0-1.4L2.2.5C1.7.2 1 .6 1 1.2Z" fill="currentColor"/></svg></span>
+          <span>How Cortex works</span>
+        </button>
         <p class="fine">The retrieval engine is open source under the MIT license, and uses local models by default.</p>
       </div>
 
@@ -289,6 +375,10 @@
           <li><h3>Check relevance</h3><p>The model grades each passage and drops the ones that don't answer the question.</p></li>
           <li><h3>Answer with sources</h3><p>The answer cites each passage it used, down to the page.</p></li>
         </ol>
+        <button class="btn-walk how-cta" type="button" data-walk>
+          <span class="play" aria-hidden="true"><svg width="11" height="12" viewBox="0 0 11 12"><path d="M1 1.2v9.6c0 .6.7 1 1.2.7l7.6-4.8c.5-.3.5-1.1 0-1.4L2.2.5C1.7.2 1 .6 1 1.2Z" fill="currentColor"/></svg></span>
+          <span>Follow a question through these steps</span>
+        </button>
         <p class="aside">Contextual retrieval, HyDE and RAG-Fusion are available for harder collections. Every step can be switched on or off, and we measure which ones actually help on your documents before turning them on.</p>
       </div>
     </section>
@@ -343,6 +433,33 @@
     </div>
   </footer>
 
+  <dialog class="walk" id="walk" aria-labelledby="walk-title">
+    <div class="walk-inner">
+      <div class="walk-head">
+        <h2 id="walk-title">How Cortex answers a question</h2>
+        <button class="walk-x" type="button" data-close aria-label="Close">&times;</button>
+      </div>
+      <p class="walk-note">Pick a question and follow it through each step. The questions and source pages come from real SEC filings in FinanceBench. The notes at each step are illustrative.</p>
+      <div class="picks" role="group" aria-label="Example questions" id="picks"></div>
+      <ol class="run" id="run" aria-live="polite"></ol>
+      <div class="result" id="result" hidden>
+        <p class="a" id="result-answer"></p>
+        <div class="page">
+          <div class="page-head"><strong id="result-file"></strong><span id="result-page"></span></div>
+          <table>
+            <caption id="result-caption"></caption>
+            <thead><tr id="result-head"></tr></thead>
+            <tbody id="result-rows"></tbody>
+          </table>
+        </div>
+        <div class="walk-actions">
+          <button class="btn btn-line" type="button" id="walk-again">Try another question</button>
+          <a class="btn btn-solid" href="https://calendly.com/saiakhil066" rel="noopener">Book a call</a>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
   <script>
     // Hairline under the header once the page scrolls
     const bar = document.getElementById('top');
@@ -360,6 +477,140 @@
       show(true);
       page.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'nearest' });
     });
+
+    // ── Walkthrough ──
+    // Questions and evidence rows are copied from the filings (FinanceBench).
+    const STAGES = ['Understand the question', 'Search two ways', 'Follow related names', 'Rerank', 'Check relevance', 'Answer with sources'];
+    const WALKS = [
+      {
+        q: "What was 3M's capital expenditure in fiscal 2018?",
+        notes: [
+          'Already a complete question, so it goes straight to search.',
+          'Keyword search matches "3M" and "2018". Semantic search also finds "purchases of property, plant and equipment", the name the filing actually uses.',
+          'Linked to 3M and its 2018 annual report (10-K).',
+          'The cash flow statement on page 60 moves to the top.',
+          'Passages about capital spending plans for other years are dropped.',
+          'Written from the cited row only.'
+        ],
+        answer: '3M spent <strong>$1,577 million</strong> on capital expenditure in fiscal 2018, reported as purchases of property, plant and equipment.',
+        file: '3M_2018_10K.pdf', page: 'Page 60', caption: 'Consolidated statement of cash flows (millions)',
+        head: ['2018', '2017', '2016'],
+        rows: [['Purchases of property, plant and equipment (PP&E)', '(1,577)', '(1,373)', '(1,420)']], hl: 1
+      },
+      {
+        q: 'And the year before?', tag: 'Follow-up', ctx: "Asked after the 3M question",
+        notes: [
+          'Rewritten as: "What was 3M\'s capital expenditure in fiscal 2017?"',
+          'Both searches run on the rewritten question, so "3M" and "2017" are part of the search.',
+          'Linked to 3M. The 2018 annual report also reports the 2017 figures.',
+          'The same cash flow statement ranks first; this time the 2017 column is the one that matters.',
+          'Passages without 2017 figures are dropped.',
+          'Written from the cited row only.'
+        ],
+        answer: "3M's capital expenditure was <strong>$1,373 million</strong> in fiscal 2017, compared with $1,577 million in 2018.",
+        file: '3M_2018_10K.pdf', page: 'Page 60', caption: 'Consolidated statement of cash flows (millions)',
+        head: ['2018', '2017', '2016'],
+        rows: [['Purchases of property, plant and equipment (PP&E)', '(1,577)', '(1,373)', '(1,420)']], hl: 2
+      },
+      {
+        q: "How much did American Express's effective tax rate change between 2021 and 2022?",
+        notes: [
+          'Already a complete question, so it goes straight to search.',
+          'Keyword search finds the exact phrase "effective tax rate" in a table of selected financial data.',
+          'Linked to American Express and its 2022 annual report (10-K).',
+          'The summary table on page 44 ranks above passages that only discuss taxes in general.',
+          'Passages about tax law changes that give no rate are dropped.',
+          'Written from the cited row only.'
+        ],
+        answer: "American Express's effective tax rate fell by <strong>3 percentage points</strong>, from 24.6% in 2021 to 21.6% in 2022.",
+        file: 'AMERICANEXPRESS_2022_10K.pdf', page: 'Page 44', caption: 'Selected financial data',
+        head: ['2022', '2021', '2020'],
+        rows: [['Effective tax rate', '21.6%', '24.6%', '27.0%']], hl: [1, 2]
+      }
+    ];
+
+    const dlg = document.getElementById('walk');
+    const picks = document.getElementById('picks');
+    const run = document.getElementById('run');
+    const result = document.getElementById('result');
+    const calm = matchMedia('(prefers-reduced-motion: reduce)');
+    let timers = [];
+
+    WALKS.forEach((w, i) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'pick'; b.setAttribute('aria-pressed', 'false');
+      if (w.tag) { const t = document.createElement('small'); t.textContent = w.tag; b.append(t); }
+      const s = document.createElement('span'); s.textContent = w.q;
+      if (w.ctx) { const c = document.createElement('span'); c.className = 'ctx'; c.textContent = w.ctx; s.append(c); }
+      b.append(s);
+      b.addEventListener('click', () => play(i));
+      picks.append(b);
+    });
+
+    function reset() {
+      timers.forEach(clearTimeout); timers = [];
+      run.innerHTML = ''; result.hidden = true;
+      picks.querySelectorAll('.pick').forEach(p => p.setAttribute('aria-pressed', 'false'));
+    }
+
+    function play(i) {
+      reset();
+      const w = WALKS[i];
+      picks.children[i].setAttribute('aria-pressed', 'true');
+      const items = STAGES.map(name => {
+        const li = document.createElement('li');
+        const h = document.createElement('h3'); h.textContent = name;
+        const p = document.createElement('p');
+        li.append(h, p); run.append(li);
+        return li;
+      });
+      const step = calm.matches ? 0 : 750;
+      items.forEach((li, k) => {
+        timers.push(setTimeout(() => li.classList.add('on'), k * step));
+        timers.push(setTimeout(() => {
+          li.querySelector('p').textContent = w.notes[k];
+          li.classList.replace('on', 'done');
+        }, k * step + step * 0.8));
+      });
+      timers.push(setTimeout(() => showResult(w), items.length * step + 100));
+    }
+
+    function showResult(w) {
+      document.getElementById('result-answer').innerHTML = w.answer + ' <span class="ref" aria-hidden="true">1</span>';
+      document.getElementById('result-file').textContent = w.file;
+      document.getElementById('result-page').textContent = w.page;
+      document.getElementById('result-caption').textContent = w.caption;
+      const head = document.getElementById('result-head');
+      head.innerHTML = '<th scope="col"></th>';
+      w.head.forEach(y => { const th = document.createElement('th'); th.scope = 'col'; th.textContent = y; head.append(th); });
+      const body = document.getElementById('result-rows');
+      body.innerHTML = '';
+      const hl = [].concat(w.hl);
+      w.rows.forEach(r => {
+        const tr = document.createElement('tr'); tr.className = 'cited';
+        r.forEach((cell, c) => { const td = document.createElement('td'); td.textContent = cell; if (hl.includes(c)) td.className = 'hl'; tr.append(td); });
+        body.append(tr);
+      });
+      result.hidden = false;
+      result.scrollIntoView({ behavior: calm.matches ? 'auto' : 'smooth', block: 'nearest' });
+    }
+
+    function openWalk() {
+      reset();
+      dlg.showModal();
+      document.body.classList.add('locked');
+      picks.firstElementChild.focus();
+    }
+    function closeWalk() { dlg.close(); }
+    dlg.addEventListener('close', () => { reset(); document.body.classList.remove('locked'); });
+    dlg.addEventListener('click', e => { if (e.target === dlg) closeWalk(); });
+    dlg.querySelector('[data-close]').addEventListener('click', closeWalk);
+    document.getElementById('walk-again').addEventListener('click', () => {
+      reset();
+      dlg.querySelector('.walk-inner').scrollTop = 0; dlg.scrollTop = 0;
+      picks.firstElementChild.focus();
+    });
+    document.querySelectorAll('[data-walk]').forEach(b => b.addEventListener('click', openWalk));
   </script>
 </body>
 </html>
