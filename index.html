@@ -161,6 +161,14 @@
     .ledger div:last-child { border-bottom: 0; }
     .ledger span { color: var(--muted); font-size: 1rem; }
     .ledger strong { font: 600 1.05rem/1.2 var(--display); text-align: right; font-variant-numeric: tabular-nums; }
+    .results table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+    .results caption { text-align: left; font: 500 .85rem/1.4 var(--display); color: var(--muted); padding: 14px 0 6px; }
+    .results th, .results td { padding: 13px 0; border-top: 1px solid var(--rule); text-align: right; }
+    .results thead th { border-top: 0; font: 500 .85rem var(--display); color: var(--muted); padding-bottom: 10px; }
+    .results tbody th { text-align: left; font-weight: 400; color: var(--ink); font-size: 1rem; padding-right: 12px; }
+    .results td { font: 500 1.05rem/1.2 var(--display); color: var(--muted); padding-left: 16px; white-space: nowrap; }
+    .results td:last-child { font-weight: 700; color: var(--cite); }
+    .bench-note { margin-top: 18px; }
     .status { display: inline-flex; align-items: center; gap: 8px; }
     .status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #E0A800; box-shadow: 0 0 0 3px rgba(224,168,0,.18); }
 
@@ -387,15 +395,21 @@
       <div class="wrap bench">
         <div>
           <h2 id="bench-title">Measured, not claimed</h2>
-          <p class="body">We're benchmarking Cortex on FinanceBench: 150 questions written by financial analysts about 84 real annual and quarterly reports. In the original 2023 study, GPT-4 Turbo with a standard retrieval setup got 81% of these questions wrong or refused to answer.</p>
-          <p class="body">We'll publish our full results here, including where Cortex falls short, together with the code to reproduce them.</p>
+          <p class="body">We ran Cortex on FinanceBench: 150 questions written by financial analysts about 84 real annual and quarterly reports. Everything ran locally on a laptop with an 8B open model.</p>
+          <p class="body">Two inexpensive changes did most of the work: sending each question to the filing it names, and reranking the passages before answering. When the evidence isn't found, Cortex says so instead of guessing. Questions that need arithmetic are still the weak spot, and that's what we're improving next.</p>
+          <p class="fine bench-note">Answers were graded by a local model with strict rules, where a refusal counts as wrong, not by people. For context, the 2023 FinanceBench study found GPT-4 Turbo with a standard retrieval setup got 81% wrong or refused; the setups differ, so it isn't a head-to-head. <a href="https://github.com/SaiAkhil066/CORTEX-AI-SUPER-RAG#benchmark" rel="noopener">Full results and code</a>.</p>
         </div>
-        <div class="ledger" aria-label="Benchmark details">
-          <div><span>Questions</span><strong>150</strong></div>
-          <div><span>SEC filings</span><strong>84</strong></div>
-          <div><span>Passages indexed</span><strong>About 61,000</strong></div>
-          <div><span>Model</span><strong>Llama 3.1 8B, local</strong></div>
-          <div><span>Status</span><strong class="status">Running now</strong></div>
+        <div class="ledger results" aria-label="Benchmark results">
+          <table>
+            <caption>FinanceBench, 150 questions, 54,649 passages</caption>
+            <thead><tr><th scope="col"></th><th scope="col">Plain RAG</th><th scope="col">Cortex</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Evidence page in top 5</th><td>25%</td><td>39%</td></tr>
+              <tr><th scope="row">Right filing in top 5</th><td>78%</td><td>93%</td></tr>
+              <tr><th scope="row">Answers correct</th><td>36%</td><td>45%</td></tr>
+              <tr><th scope="row">Said "not found" instead</th><td>55%</td><td>43%</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </section>
